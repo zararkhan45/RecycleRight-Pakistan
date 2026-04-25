@@ -1,0 +1,21 @@
+Both files are written.
+
+artifacts/household/screens/WasteLoggingScreen.js
+
+HeaderBar titled "Log Your Waste" with a back arrow that goes back (or to the dashboard if there's no history).
+Select Waste Type — a wrapping grid (using flexWrap) of 6 chips, each 100×90 with white bg + #E5E7EB border. When selected the chip flips to the waste type's colour with white icon/label/rate. Only one selection at a time.
+Estimated Weight (kg) — bordered input (radius 8, padding 14×16, 18pt 700) with decimal-pad keyboard, 0.0 placeholder, and a "kg" label to its right. Below it sits a quick-pick row of 1/2/5/10 kg outlined chips that populate the input on tap.
+Notes (Optional) — multiline input, height 80, 14pt with the requested placeholder.
+Points Preview — white card that recalculates pointsPerKg × weight live as the user types/selects, falling back to the "Select waste type and weight to see points" message until both are set.
+Continue to Request Pickup — full-width green pill button, disabled at 0.5 opacity until a type is chosen and weight > 0; navigates to PickupRequestScreen with { wasteType, weight, notes }.
+artifacts/household/screens/PickupRequestScreen.js
+
+HeaderBar titled "Request Pickup" with a back arrow.
+Top summary card showing the waste-type icon, label, and weight passed in from the previous screen, with an Edit link in #1E9B6B on the right that navigates back.
+Pickup Location — a 160-tall non-interactive MapView thumbnail (uses the same Map.native.js/Map.web.js shim the Collector app already uses, so it works on both phone and web preview) centred on 31.4697, 74.4054 with a single marker. Below it: the household's address and a Change Location link that pops the demo alert.
+Preferred Pickup Date — horizontal scrollable row of the next 5 days as 64×72 chips (day abbreviation 11pt + date number 18pt 700). Today is pre-selected; selected chip is #1E9B6B with white text.
+Time Preference — three radio rows (Morning 8am-12pm, Afternoon 12pm-5pm, Evening 5pm-8pm). Custom radio (20×20 outer border, 12×12 #1E9B6B inner). Morning is pre-selected.
+Special Instructions — same multiline input style as the logging screen.
+Order Summary card listing waste type, weight, location area, date, and time picked.
+Submit Pickup Request button — on press flips its label to ✓ Request Submitted!, disables itself, and after 800ms navigates back to HomeDashboardScreen. No alerts.
+Both screens import the shared theme.js, HeaderBar, and Map components from the Collector artifact, plus householdMockData.js for the address and waste-type info.

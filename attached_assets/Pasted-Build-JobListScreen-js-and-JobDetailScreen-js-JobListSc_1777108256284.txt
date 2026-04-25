@@ -1,0 +1,43 @@
+Build JobListScreen.js and JobDetailScreen.js.
+
+--- JobListScreen.js ---
+A scrollable list of all collector jobs (pending, accepted, completed).
+
+Layout:
+- White header bar with title "My Jobs" (18pt, fontWeight 700). No back button —
+  this is a tab screen.
+- Three horizontally scrollable filter tabs below the header: "All", "Pending",
+  "Accepted", "Completed". Active tab has a green underline and dark text.
+  Inactive tabs have muted grey text. Implemented with a FlatList horizontal.
+- Job cards (JobCard.js component) in a vertical FlatList. Each card:
+  - White background, borderRadius 12, marginHorizontal 16, marginVertical 6,
+    elevation 2, padding 14.
+  - Left: a coloured square icon representing waste type (plastic=blue, metal=grey,
+    paper=yellow, glass=teal), 44x44, borderRadius 10.
+  - Centre: Household area (14pt, fontWeight 600), waste type + weight on one line
+    (13pt, #6B7280), time posted ("Posted 12 min ago", 12pt, #9CA3AF).
+  - Right: StatusBadge component (small pill: green for pending, amber for accepted,
+    grey for completed) and a chevron "›".
+  - Tapping the card navigates to JobDetailScreen with the job object.
+
+--- JobDetailScreen.js ---
+Full details of one pickup job.
+
+Layout:
+- Header bar with back arrow and title "Job Details".
+- A map thumbnail at the top (MapView, non-interactive, 200px tall, borderRadius 12,
+  showing the job's GPS pin and the collector's approximate location).
+- Below: a white card with job metadata in a clean two-column grid:
+    Waste Type | Weight Estimate
+    Area       | Distance
+    Posted     | Status badge
+- A section titled "Household Notes" showing any notes from mockData (e.g.
+  "Bags are by the gate").
+- A green "Accept This Job" button (full width, 52px tall, borderRadius 24).
+  On press: update the job status to "accepted" in local state, show a brief
+  success toast ("Job accepted! Navigate to household."), then navigate to
+  NavigationScreen passing the job.
+- If job is already accepted, show "Cancel Acceptance" in red outline style instead.
+
+Use StatusBadge.js for all status indicators.
+Output both complete files.

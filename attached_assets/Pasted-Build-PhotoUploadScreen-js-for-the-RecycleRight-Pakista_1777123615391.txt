@@ -1,0 +1,16 @@
+Build PhotoUploadScreen.js for the RecycleRight Pakistan Household app. Import from ../../collector/theme.js and ../data/householdMockData.js.
+
+•	Header: HeaderBar with title 'Add Photo Evidence', back arrow, and right component: 'Skip' text in #6B7280 14pt — tapping navigates back without uploading.
+•	Root: SafeAreaView + ScrollView, background #F8FAFB.
+•	Instructional card (white, borderRadius 12, marginHorizontal 16, marginTop 16, padding 16, elevation 2):
+◦	Icon: '📷' 28pt. Title: 'Photo helps verify your waste' 15pt fontWeight 600 #1A1A2E.
+◦	Body: 'Clear photos of your waste bags improve collector accuracy and earn you bonus verification points.' 13pt #6B7280.
+•	Main upload area (marginHorizontal 16, marginTop 16): a large dashed-border rectangle (height 200, borderRadius 16, border 2px dashed #9CA3AF). Inside: centred column with '📁' 48pt, 'Upload a Photo' 16pt fontWeight 600 #1A1A2E, 'JPG or PNG, max 5MB' 13pt #6B7280. This entire area is a TouchableOpacity — on press: show an ActionSheet-style bottom modal with two options: 'Take Photo 📷' and 'Choose from Gallery 🖼️'. Both options, when tapped, close the modal and set a mock selected photo state (use a static placeholder: set state to { uri: null, name: 'waste_photo_01.jpg', size: '2.3 MB' } to simulate a selected file).
+•	Selected state (when photo is 'selected'): replace the upload area with a grey placeholder rectangle (same size, borderRadius 16, background #F3F4F6) containing '🖼️' centred 48pt and filename below 13pt #6B7280. A small '✕' remove button (white circle, #EF4444 text, 28x28, elevation 2) positioned absolute top-right of the rectangle.
+•	Photo tips list (white card, borderRadius 12, marginHorizontal 16, marginTop 16, padding 16, elevation 2):
+◦	Title: 'Photo Tips' 14pt fontWeight 600 #1A1A2E.
+◦	Four bullet rows (icon + text), 13pt #6B7280: '✅ Good lighting', '✅ Show all the waste bags', '✅ Avoid blurry images', '✅ Include size reference if possible'.
+•	The ActionSheet-style bottom modal: a semi-transparent dark overlay (rgba(0,0,0,0.5)) covering the full screen, with a white card at bottom (borderRadius top 20, padding 20, elevation 8). Two large TouchableOpacity rows inside with 16pt text, paddingVertical 16, borderBottom #F3F4F6. A 'Cancel' row at bottom in #EF4444.
+•	'Upload and Continue' button (full width, #1E9B6B, borderRadius 24, height 52, marginHorizontal 16, marginTop 24, white text 16pt fontWeight 600). Disabled state (opacity 0.5) when no photo selected. On press (photo selected): show Alert 'Photo uploaded successfully! (Demo mode — no actual upload)' then navigate back.
+
+Output the complete file only.

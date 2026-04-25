@@ -1,0 +1,46 @@
+Build the following shared components and wire up the navigator. Import from ../../collector/theme.js throughout.
+
+components/BottomTabBar.js
+•	Props: activeTab (string: 'home'|'log'|'history'|'profile'), onTabChange (function).
+•	4 tabs: { id: 'home', label: 'Home', icon: '🏠' }, { id: 'log', label: 'Log Waste', icon: '♻️' }, { id: 'history', label: 'History', icon: '📋' }, { id: 'profile', label: 'Profile', icon: '👤' }
+•	Styling: white background, borderTopWidth 1, borderTopColor #F3F4F6, paddingBottom using useSafeAreaInsets().bottom (minimum 8). Each tab: TouchableOpacity, flex 1, alignItems center, paddingTop 8. Active: icon + label in #1E9B6B, fontWeight 600 label 10pt. Inactive: #9CA3AF.
+•	The 'Log Waste' tab has a special treatment: slightly larger icon container (44x44 circle, background #1E9B6B, centred '♻️' emoji in white) — like a primary action floating tab. When this tab is tapped, navigate to WasteLoggingScreen as a stack screen (not a tab switch).
+
+components/StatusBadge.js
+•	Props: status ('pending' | 'accepted' | 'en_route' | 'completed' | 'cancelled')
+•	Renders a small pill: paddingHorizontal 10, paddingVertical 4, borderRadius 12.
+•	pending → background #FEF3C7, text #92400E, label 'Pending'
+•	accepted → background #DBEAFE, text #1E40AF, label 'Accepted'
+•	en_route → background #D1FAE5, text #065F46, label 'En Route 🚛'
+•	completed → background #E5E7EB, text #374151, label 'Completed ✓'
+•	cancelled → background #FEE2E2, text #991B1B, label 'Cancelled'
+•	Text: 11pt, fontWeight 600.
+
+components/HeaderBar.js
+•	Identical API to Zarar's HeaderBar.js — Props: title (string), showBack (bool), onBack (function), rightComponent (node).
+•	Safe-area-aware. Height 56px + safe area top. White background, borderBottomWidth 1, borderBottomColor #F3F4F6.
+•	Back arrow: '←' in #1E9B6B, 22pt, paddingHorizontal 16. If showBack is false, render a spacer of same width.
+•	Title: centred, 18pt fontWeight 700 #1A1A2E.
+•	rightComponent: positioned absolute right side with paddingRight 16.
+
+components/PointsBalanceCard.js
+•	Standalone reusable card. Props: points (number), tier (string), nextTierPoints (number), nextTierName (string).
+•	Renders the green card from HomeDashboardScreen — extracts it as a component so it can be reused in ProfileScreen.
+
+components/WasteTypeChip.js
+•	Props: wasteType (object from wasteTypes array), selected (bool), onPress (function).
+•	Renders the selectable waste type chip from WasteLoggingScreen.
+
+navigation/HouseholdNavigator.js
+•	A React Navigation Stack + custom tab implementation:
+◦	Stack root screens: HouseholdRegistrationScreen, HouseholdLoginScreen → Main (tab container).
+◦	The 'Main' screen is a custom tab container component that renders the correct screen based on activeTab state, with BottomTabBar at the bottom (same pattern as CollectorNavigator.js).
+◦	Tab screens: HomeDashboardScreen (home), WasteLoggingScreen (log), PickupHistoryScreen (history), ProfileScreen (profile placeholder — see below).
+◦	The Stack handles these as modal/push screens: PickupRequestScreen, LiveMapTrackingScreen, PhotoUploadScreen, DigitalReceiptScreen.
+◦	Screen options: headerShown false on all screens (custom HeaderBar is used).
+•	ProfileScreen (inline placeholder in this file): shows user avatar initials in a 80x80 #1E9B6B circle, user name 20pt fontWeight 700, city 14pt #6B7280, verified badge ('✓ Verified', #10B981, 12pt), green points summary, and a 'Log Out' button (outlined red, #EF4444 border, borderRadius 24, height 48, marginTop 24). On 'Log Out' press: navigate to HouseholdLoginScreen and reset the stack.
+
+index.js
+•	App entry point for the Household side. Import registerRootComponent from 'expo'. Import HouseholdNavigator. Call registerRootComponent(HouseholdNavigator). Include a comment: '// Household side entry point — Collector entry is at artifacts/collector/index.js'.
+
+Output all files in full.

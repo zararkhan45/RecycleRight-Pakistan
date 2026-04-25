@@ -1,0 +1,30 @@
+Build WasteLoggingScreen.js and PickupRequestScreen.js. Import from ../../collector/theme.js and ../data/householdMockData.js.
+
+WasteLoggingScreen.js
+•	Header: HeaderBar with title 'Log Your Waste', back arrow navigates back to HomeDashboardScreen.
+•	ScrollView, background #F8FAFB.
+•	Section: 'Select Waste Type' (15pt fontWeight 600 #1A1A2E, marginTop 20 marginHorizontal 16). Below: a 2x3 grid of WasteTypeChip components (using FlatList with numColumns 3, or a mapped View with flexWrap 'wrap'):
+◦	Each chip: 100x90, borderRadius 12, background white, elevation 2, margin 6, alignItems center, justifyContent center.
+◦	Unselected: white bg, #E5E7EB border 1px. Selected: waste type colour background (from wasteTypes), white icon and text.
+◦	Inside: emoji icon 28pt, waste type label 12pt fontWeight 600 below, points rate '10 pts/kg' in 10pt below label.
+◦	Only one chip can be selected at a time.
+•	Section: 'Estimated Weight (kg)' (15pt fontWeight 600, marginTop 20 marginHorizontal 16). Below: a styled TextInput — bordered box, borderRadius 8, border #E5E7EB, paddingVertical 14 paddingHorizontal 16, fontSize 18 fontWeight 700 #1A1A2E, keyboardType 'decimal-pad', placeholder '0.0'. To the right of input: unit label 'kg' in 16pt #6B7280.
+•	Weight quick-select row below input: four touchable chips '1 kg', '2 kg', '5 kg', '10 kg' — outlined, borderRadius 8, padding 8 horizontal 16. Tapping a chip populates the TextInput.
+•	Section: 'Notes (Optional)' — multiline TextInput, borderRadius 8, border #E5E7EB, height 80, padding 12, fontSize 14, placeholder 'E.g. Bags are ready at the gate.'
+•	Points Preview card (white, borderRadius 12, marginHorizontal 16, marginTop 16, padding 14, elevation 2): shows dynamically calculated estimated points based on selected waste type and entered weight. Display: '🌱 Estimated: +[N] Green Points'. Update live as user changes inputs. If no type or weight selected, show '🌱 Select waste type and weight to see points'.
+•	'Continue to Request Pickup' button (full width, #1E9B6B, borderRadius 24, height 52, marginHorizontal 16, marginTop 20, white text 16pt fontWeight 600). Disabled (opacity 0.5) if no waste type selected or weight is 0 or empty. On press (valid): navigate to PickupRequestScreen, passing { wasteType, weight, notes }.
+
+PickupRequestScreen.js
+•	Header: HeaderBar with title 'Request Pickup', back arrow.
+•	ScrollView, background #F8FAFB.
+•	Summary card at top (white, borderRadius 12, marginHorizontal 16, marginTop 16, padding 14, elevation 2): shows the waste type icon + label and weight passed from WasteLoggingScreen. A small 'Edit' link in #1E9B6B on the right that navigates back.
+•	Section: 'Pickup Location' (15pt fontWeight 600, marginTop 20 marginHorizontal 16).
+◦	A non-interactive MapView thumbnail (height 160, borderRadius 12, marginHorizontal 16) centred on the user's mock address GPS (DHA Phase 5, Lahore: lat 31.4697, lng 74.4054). Show a single marker pin at that location.
+◦	Below map: the address string from householdProfile in 14pt #1A1A2E. A 'Change Location' link in #1E9B6B 13pt (shows Alert 'Location editing is not available in the demo.').
+•	Section: 'Preferred Pickup Date' (15pt fontWeight 600, marginTop 20). A horizontal scrollable row of date chips for the next 5 days. Each chip: width 64, height 72, borderRadius 12, border #E5E7EB, centred. Shows day abbreviation (Mon/Tue etc.) in 11pt #6B7280 and date number in 18pt fontWeight 700 #1A1A2E. Selected chip: bg #1E9B6B, white text. Today's chip is pre-selected.
+•	Section: 'Time Preference' (15pt fontWeight 600, marginTop 20). Three radio-style TouchableOpacity rows: Morning (8am-12pm), Afternoon (12pm-5pm), Evening (5pm-8pm). Each row: left radio circle (outer circle #E5E7EB 20x20, inner filled circle #1E9B6B 12x12 when selected), label 14pt #1A1A2E. 'Morning' pre-selected.
+•	Section: 'Special Instructions' — same multiline TextInput style as WasteLoggingScreen.
+•	Order Summary card (white, borderRadius 12, marginHorizontal 16, marginTop 16, padding 16, elevation 2): shows waste type, weight, location area, selected date, time. Title 'Order Summary' 15pt fontWeight 600.
+•	'Submit Pickup Request' button: full width, #1E9B6B, borderRadius 24, height 52, marginHorizontal 16, marginTop 20. On press: show a brief inline success state — button text changes to '✓ Request Submitted!', then after 800ms navigate to HomeDashboardScreen. No Alert dialogs.
+
+Output both complete files.

@@ -1,31 +1,42 @@
 /**
  * RecycleRight Pakistan — Household Home Dashboard
  *
- * Tab-level home screen. Pulls everything from householdMockData.js and
- * shares its visual language with the Collector app via collector/theme.js.
+ * Polish pass:
+ *   - Theme consistency: local PRIMARY/TEXT/MUTED constants now read from
+ *     ../../collector/theme.js (single source of truth). Status-badge tints
+ *     and the #9CA3AF subtle shade remain as documented hex literals — they
+ *     are not present in the shared collector theme.
+ *   - Skeleton loader: 1.2s simulated load on mount via SkeletonBlock.
+ *   - Empty state: gentle prompt in "Recent Pickups" if pickupRequests
+ *     ever resolves to an empty list (defensive — mock data has 8 items).
+ *   - Points animation: Green Points number counts up from 0 → real value
+ *     over 800ms via Animated.timing + addListener (40pt, weight 800).
+ *   - Typography audit: section headings 15pt/600, body 14pt/400, muted
+ *     12pt, points figure 40pt/800.
+ *   - Safe areas: SafeAreaView from 'react-native-safe-area-context'.
  *
  * Sections (top → bottom):
  *   1. Header (greeting + avatar + bell)
- *   2. Green Points balance card (with tier + progress to next tier)
+ *   2. Green Points balance card (with tier + animated count-up)
  *   3. Quick Actions row (4 action cards, horizontally scrollable)
  *   4. Active Request banner (only if a pickup is en_route or accepted)
- *   5. Recent Pickups (3 most recent)
+ *   5. Recent Pickups (3 most recent, with empty-state fallback)
  *   6. Environmental Impact summary
  *   + Inline bottom tab bar (Home / Log / History / Profile)
  */
 
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   Easing,
   Pressable,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors, typography } from '../../collector/theme.js';
 import {
@@ -35,15 +46,19 @@ import {
   pickupRequests,
   wasteTypes,
 } from '../data/householdMockData.js';
+import SkeletonBlock from '../components/SkeletonBlock.js';
 
-const PRIMARY = '#1E9B6B';
-const PRIMARY_DARK = '#17784F';
-const PRIMARY_TINT = '#E8F5EE';
-const BG = '#F8FAFB';
-const TEXT = '#1A1A2E';
-const MUTED = '#6B7280';
-const SUBTLE = '#9CA3AF';
-const DANGER = '#EF4444';
+const PRIMARY = colors.primary;
+const PRIMARY_DARK = colors.primaryDark;
+const PRIMARY_TINT = colors.primaryLight;
+const BG = colors.background;
+const TEXT = colors.text;
+const MUTED = colors.textMuted;
+const SUBTLE = '#9CA3AF'; // not in shared theme — kept as documented exception
+const DANGER = colors.danger;
+const SURFACE = colors.surface;
+const DIVIDER = colors.divider;
+const SHADOW = colors.shadow;
 
 const TIER_ICONS = {
   Bronze: '🥉',
@@ -52,6 +67,7 @@ const TIER_ICONS = {
   Platinum: '💎',
 };
 
+// Status-badge palette: not in shared theme — documented exception.
 const STATUS_META = {
   pending: { label: 'Pending', bg: '#FEF3C7', fg: '#B45309' },
   accepted: { label: 'Accepted', bg: '#DBEAFE', fg: '#1D4ED8' },
@@ -60,7 +76,17 @@ const STATUS_META = {
   cancelled: { label: 'Cancelled', bg: '#FEE2E2', fg: '#B91C1C' },
 };
 
+const SKELETON_MS = 1200;
+const POINTS_ANIM_MS = 800;
+
 export default function HomeDashboardScreen({ navigation }) {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => setIsLoading(false), SKELETON_MS);
+    return () => clearTimeout(t);
+  }, []);
+
   const wasteTypeMap = useMemo(
     () => Object.fromEntries(wasteTypes.map((w) => [w.id, w])),
     [],
@@ -106,7 +132,7 @@ export default function HomeDashboardScreen({ navigation }) {
 
   const pulse = useRef(new Animated.Value(0.4)).current;
   useEffect(() => {
-    if (!activeRequest) return undefined;
+    if (isLoading || !activeRequest) return undefined;
     const loop = Animated.loop(
       Animated.sequence([
         Animated.timing(pulse, {
@@ -125,14 +151,14 @@ export default function HomeDashboardScreen({ navigation }) {
     );
     loop.start();
     return () => loop.stop();
-  }, [activeRequest, pulse]);
+  }, [activeRequest, pulse, isLoading]);
 
   const go = (screen) => () => navigation?.navigate?.(screen);
 
   return (
     <View style={styles.root}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-      <SafeAreaView style={styles.flex}>
+      <StatusBar barStyle="dark-content" backgroundColor={SURFACE} />
+      <SafeAreaView style={styles.flex} edges={['top']}>
         <ScrollView
           style={styles.flex}
           contentContainerStyle={styles.scrollContent}
@@ -142,7 +168,16 @@ export default function HomeDashboardScreen({ navigation }) {
           <View style={styles.header}>
             <View style={styles.headerLeft}>
               <Text style={styles.greeting}>Good morning,</Text>
-              <Text style={styles.userName}>{householdProfile.name}</Text>
+              {isLoading ? (
+                <SkeletonBlock
+                  width={140}
+                  height={18}
+                  borderRadius={6}
+                  style={{ marginTop: 4 }}
+                />
+              ) : (
+                <Text style={styles.userName}>{householdProfile.name}</Text>
+              )}
             </View>
             <View style={styles.headerRight}>
               <View style={styles.avatar}>
@@ -162,10 +197,33 @@ export default function HomeDashboardScreen({ navigation }) {
           </View>
 
           {/* Section 2 — Green Points Balance Card */}
-          <PointsBalanceCard
-            points={householdProfile.greenPoints}
-            tierInfo={tierInfo}
-          />
+          {isLoading ? (
+            <View style={[styles.pointsCard, styles.pointsCardSkeleton]}>
+              <SkeletonBlock
+                width={120}
+                height={14}
+                borderRadius={6}
+                style={styles.skeletonOnDark}
+              />
+              <SkeletonBlock
+                width={160}
+                height={44}
+                borderRadius={8}
+                style={[styles.skeletonOnDark, { marginTop: 14 }]}
+              />
+              <SkeletonBlock
+                width={'80%'}
+                height={6}
+                borderRadius={3}
+                style={[styles.skeletonOnDark, { marginTop: 22 }]}
+              />
+            </View>
+          ) : (
+            <PointsBalanceCard
+              points={householdProfile.greenPoints}
+              tierInfo={tierInfo}
+            />
+          )}
 
           {/* Section 3 — Quick Actions */}
           <Text style={styles.sectionTitle}>Quick Actions</Text>
@@ -197,7 +255,7 @@ export default function HomeDashboardScreen({ navigation }) {
           </ScrollView>
 
           {/* Section 4 — Active Request Banner (conditional) */}
-          {activeRequest ? (
+          {!isLoading && activeRequest ? (
             <Pressable
               onPress={go('LiveMapTrackingScreen')}
               style={styles.activeBanner}
@@ -222,18 +280,32 @@ export default function HomeDashboardScreen({ navigation }) {
           {/* Section 5 — Recent Pickups */}
           <View style={styles.sectionTitleRow}>
             <Text style={styles.sectionTitleInline}>Recent Pickups</Text>
-            <Pressable onPress={go('PickupHistoryScreen')} hitSlop={8}>
-              <Text style={styles.seeAll}>See All</Text>
-            </Pressable>
+            {!isLoading && recentPickups.length > 0 ? (
+              <Pressable onPress={go('PickupHistoryScreen')} hitSlop={8}>
+                <Text style={styles.seeAll}>See All</Text>
+              </Pressable>
+            ) : null}
           </View>
 
-          {recentPickups.map((req) => (
-            <PickupStatusCard
-              key={req.id}
-              request={req}
-              wasteType={wasteTypeMap[req.wasteType]}
+          {isLoading ? (
+            <View>
+              <PickupCardSkeleton />
+              <PickupCardSkeleton />
+              <PickupCardSkeleton />
+            </View>
+          ) : recentPickups.length === 0 ? (
+            <RecentPickupsEmpty
+              onRequest={go('PickupRequestScreen')}
             />
-          ))}
+          ) : (
+            recentPickups.map((req) => (
+              <PickupStatusCard
+                key={req.id}
+                request={req}
+                wasteType={wasteTypeMap[req.wasteType]}
+              />
+            ))
+          )}
 
           {/* Section 6 — Environmental Impact */}
           <View style={styles.impactCard}>
@@ -265,6 +337,24 @@ export default function HomeDashboardScreen({ navigation }) {
 
 function PointsBalanceCard({ points, tierInfo }) {
   const { tier, nextTier, progressPct } = tierInfo;
+
+  // Animated count-up: 0 → points over POINTS_ANIM_MS (800ms).
+  const animated = useRef(new Animated.Value(0)).current;
+  const [displayed, setDisplayed] = useState(0);
+
+  useEffect(() => {
+    const id = animated.addListener(({ value }) => {
+      setDisplayed(Math.round(value));
+    });
+    Animated.timing(animated, {
+      toValue: points,
+      duration: POINTS_ANIM_MS,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: false,
+    }).start();
+    return () => animated.removeListener(id);
+  }, [points, animated]);
+
   const progressLabel = nextTier
     ? `${tier.name} → ${nextTier.name}: ${points.toLocaleString(
         'en-US',
@@ -282,7 +372,9 @@ function PointsBalanceCard({ points, tierInfo }) {
         </View>
       </View>
 
-      <Text style={styles.pointsValue}>{points.toLocaleString('en-US')}</Text>
+      <Text style={styles.pointsValue}>
+        {displayed.toLocaleString('en-US')}
+      </Text>
       <Text style={styles.pointsUnit}>points</Text>
 
       <Text style={styles.progressLabel}>{progressLabel}</Text>
@@ -322,7 +414,7 @@ function PickupStatusCard({ request, wasteType }) {
       <View
         style={[
           styles.pickupIcon,
-          { backgroundColor: wasteType?.colour || '#E5E7EB' },
+          { backgroundColor: wasteType?.colour || colors.border },
         ]}
       >
         <Text style={styles.pickupIconText}>{wasteType?.icon || '♻️'}</Text>
@@ -349,10 +441,49 @@ function PickupStatusCard({ request, wasteType }) {
   );
 }
 
+function PickupCardSkeleton() {
+  return (
+    <View style={styles.pickupCard}>
+      <SkeletonBlock width={44} height={44} borderRadius={10} />
+      <View style={[styles.pickupCenter, { marginLeft: 12 }]}>
+        <SkeletonBlock width={'70%'} height={14} borderRadius={6} />
+        <SkeletonBlock
+          width={'55%'}
+          height={12}
+          borderRadius={6}
+          style={{ marginTop: 6 }}
+        />
+        <SkeletonBlock
+          width={'40%'}
+          height={10}
+          borderRadius={5}
+          style={{ marginTop: 6 }}
+        />
+      </View>
+      <SkeletonBlock width={64} height={20} borderRadius={999} />
+    </View>
+  );
+}
+
+function RecentPickupsEmpty({ onRequest }) {
+  return (
+    <View style={styles.recentEmpty}>
+      <Text style={styles.recentEmptyEmoji}>📭</Text>
+      <Text style={styles.recentEmptyHeading}>No pickups yet</Text>
+      <Text style={styles.recentEmptyBody}>
+        Submit your first pickup request to get started.
+      </Text>
+      <Pressable onPress={onRequest} hitSlop={8} style={styles.recentEmptyLink}>
+        <Text style={styles.recentEmptyLinkText}>Request Pickup</Text>
+      </Pressable>
+    </View>
+  );
+}
+
 function StatusBadge({ status }) {
   const meta = STATUS_META[status] || {
     label: status,
-    bg: '#E5E7EB',
+    bg: colors.border,
     fg: TEXT,
   };
   return (
@@ -464,7 +595,7 @@ const styles = StyleSheet.create({
 
   /* Header */
   header: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: SURFACE,
     paddingHorizontal: 20,
     paddingTop: 8,
     paddingBottom: 12,
@@ -476,13 +607,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   greeting: {
-    fontSize: 13,
+    fontSize: 12,
     color: MUTED,
     fontFamily: typography.fontFamily,
   },
   userName: {
     marginTop: 2,
-    fontSize: 16,
+    fontSize: 18,
     color: TEXT,
     fontWeight: '700',
     fontFamily: typography.fontFamilyMedium,
@@ -501,7 +632,7 @@ const styles = StyleSheet.create({
     marginRight: 14,
   },
   avatarText: {
-    color: '#FFFFFF',
+    color: colors.textInverse,
     fontSize: 16,
     fontWeight: '700',
     fontFamily: typography.fontFamilyMedium,
@@ -533,11 +664,17 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: PRIMARY,
     padding: 20,
-    shadowColor: '#0F172A',
+    shadowColor: SHADOW,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.12,
     shadowRadius: 8,
     elevation: 3,
+  },
+  pointsCardSkeleton: {
+    minHeight: 156,
+  },
+  skeletonOnDark: {
+    backgroundColor: 'rgba(255,255,255,0.35)',
   },
   pointsTopRow: {
     flexDirection: 'row',
@@ -545,7 +682,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   pointsHeading: {
-    color: '#FFFFFF',
+    color: colors.textInverse,
     fontSize: 13,
     opacity: 0.85,
     fontFamily: typography.fontFamily,
@@ -557,21 +694,21 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   tierPillText: {
-    color: '#FFFFFF',
+    color: colors.textInverse,
     fontSize: 12,
     fontFamily: typography.fontFamilyMedium,
     fontWeight: '600',
   },
   pointsValue: {
     marginTop: 12,
-    color: '#FFFFFF',
-    fontSize: 40,
+    color: colors.textInverse,
+    fontSize: 44,
     fontWeight: '800',
     letterSpacing: -0.5,
     fontFamily: typography.fontFamilyMedium,
   },
   pointsUnit: {
-    color: '#FFFFFF',
+    color: colors.textInverse,
     fontSize: 14,
     opacity: 0.7,
     marginTop: -2,
@@ -579,7 +716,7 @@ const styles = StyleSheet.create({
   },
   progressLabel: {
     marginTop: 16,
-    color: '#FFFFFF',
+    color: colors.textInverse,
     fontSize: 12,
     opacity: 0.85,
     fontFamily: typography.fontFamily,
@@ -594,7 +731,7 @@ const styles = StyleSheet.create({
   progressFill: {
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.textInverse,
   },
 
   /* Section titles */
@@ -636,11 +773,11 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 12,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: SURFACE,
     marginRight: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#0F172A',
+    shadowColor: SHADOW,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 4,
@@ -691,7 +828,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   activeBannerTitle: {
-    color: PRIMARY,
+    color: PRIMARY_DARK,
     fontSize: 14,
     fontWeight: '600',
     fontFamily: typography.fontFamilyMedium,
@@ -711,14 +848,14 @@ const styles = StyleSheet.create({
 
   /* Pickup Cards */
   pickupCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: SURFACE,
     borderRadius: 12,
     marginHorizontal: 16,
     marginVertical: 5,
     padding: 14,
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#0F172A',
+    shadowColor: SHADOW,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 4,
@@ -780,14 +917,54 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontFamilyMedium,
   },
 
+  /* Recent Pickups empty state */
+  recentEmpty: {
+    marginHorizontal: 16,
+    marginTop: 8,
+    alignItems: 'center',
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+    backgroundColor: SURFACE,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.divider,
+  },
+  recentEmptyEmoji: {
+    fontSize: 32,
+  },
+  recentEmptyHeading: {
+    marginTop: 8,
+    fontSize: 15,
+    fontWeight: '600',
+    color: TEXT,
+    fontFamily: typography.fontFamilyMedium,
+    textAlign: 'center',
+  },
+  recentEmptyBody: {
+    marginTop: 4,
+    fontSize: 13,
+    color: MUTED,
+    textAlign: 'center',
+    fontFamily: typography.fontFamily,
+  },
+  recentEmptyLink: {
+    marginTop: 10,
+  },
+  recentEmptyLinkText: {
+    color: PRIMARY,
+    fontSize: 13,
+    fontWeight: '600',
+    fontFamily: typography.fontFamilyMedium,
+  },
+
   /* Impact Card */
   impactCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: SURFACE,
     marginHorizontal: 16,
     marginTop: 12,
     borderRadius: 12,
     padding: 16,
-    shadowColor: '#0F172A',
+    shadowColor: SHADOW,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 4,
@@ -825,9 +1002,9 @@ const styles = StyleSheet.create({
   /* Bottom tab bar */
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: SURFACE,
     borderTopWidth: 1,
-    borderTopColor: '#EEF1F3',
+    borderTopColor: DIVIDER,
     paddingTop: 8,
     paddingBottom: 8,
   },

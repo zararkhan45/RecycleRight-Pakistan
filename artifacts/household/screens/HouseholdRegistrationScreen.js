@@ -1,6 +1,16 @@
 /**
  * RecycleRight Pakistan — Household Registration Screen
  *
+ * Polish pass:
+ *   - Theme consistency: PRIMARY/PANEL_BG and all hex literals in styles
+ *     now sourced from ../../collector/theme.js. Subtle placeholder shade
+ *     (#9CA3AF) kept as documented exception.
+ *   - Keyboard avoidance: behavior is now
+ *     `Platform.OS === 'ios' ? 'padding' : 'height'`.
+ *   - Haptics: medium impact pulse on a successful "Create Account" press
+ *     (wrapped in try/catch — silently no-ops on platforms without the
+ *     module, e.g. web).
+ *
  * Sign-up form for new household users. No backend wiring — on a successful
  * (locally-validated) submission we navigate into the dashboard with the
  * mock householdProfile attached.
@@ -18,12 +28,21 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 
 import { colors, typography } from '../../collector/theme.js';
 import { householdProfile } from '../data/householdMockData.js';
 
-const PRIMARY = '#1E9B6B';
-const PANEL_BG = '#F8FAFB';
+const PRIMARY = colors.primary;
+const PRIMARY_DARK = colors.primaryDark;
+const PANEL_BG = colors.background;
+const SURFACE = colors.surface;
+const TEXT = colors.text;
+const MUTED = colors.textMuted;
+const BORDER = colors.border;
+const DANGER = colors.danger;
+const SHADOW = colors.shadow;
+const SUBTLE = '#9CA3AF'; // not in shared theme — documented exception
 
 export default function HouseholdRegistrationScreen({ navigation }) {
   const [fullName, setFullName] = useState('');
@@ -52,8 +71,13 @@ export default function HouseholdRegistrationScreen({ navigation }) {
 
   const canSubmit = Boolean(allFilled && passwordsMatch);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!canSubmit) return;
+    try {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    } catch (e) {
+      // Haptics unavailable (web/unsupported device) — fail silently.
+    }
     navigation?.navigate?.('HomeDashboardScreen', {
       householdProfile: {
         ...householdProfile,
@@ -70,7 +94,7 @@ export default function HouseholdRegistrationScreen({ navigation }) {
       <StatusBar barStyle="light-content" backgroundColor={PRIMARY} />
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView
           contentContainerStyle={styles.scrollContent}
@@ -223,7 +247,7 @@ function Field({
             styles.input,
             multiline && styles.inputMultiline,
           ]}
-          placeholderTextColor="#9CA3AF"
+          placeholderTextColor={SUBTLE}
         />
         {rightAccessory ? (
           <View style={styles.rightAccessory}>{rightAccessory}</View>
@@ -253,7 +277,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 24,
   },
   brand: {
-    color: '#FFFFFF',
+    color: colors.textInverse,
     fontSize: 28,
     fontWeight: '700',
     textAlign: 'center',
@@ -262,19 +286,19 @@ const styles = StyleSheet.create({
   },
   brandSubtitle: {
     marginTop: 6,
-    color: '#FFFFFF',
+    color: colors.textInverse,
     opacity: 0.85,
     fontSize: 14,
     textAlign: 'center',
     fontFamily: typography.fontFamily,
   },
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: SURFACE,
     marginTop: -32,
     marginHorizontal: 16,
     borderRadius: 20,
     padding: 20,
-    shadowColor: '#0F172A',
+    shadowColor: SHADOW,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 12,
@@ -285,16 +309,16 @@ const styles = StyleSheet.create({
   },
   fieldLabel: {
     fontSize: 12,
-    color: '#6B7280',
+    color: MUTED,
     marginBottom: 6,
     fontFamily: typography.fontFamily,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: SURFACE,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: BORDER,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 4,
@@ -305,7 +329,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   inputWrapperError: {
-    borderColor: '#EF4444',
+    borderColor: DANGER,
   },
   inputIcon: {
     fontSize: 16,
@@ -339,7 +363,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     marginTop: 6,
-    color: '#EF4444',
+    color: DANGER,
     fontSize: 12,
     fontFamily: typography.fontFamily,
   },
@@ -355,10 +379,10 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   primaryButtonPressed: {
-    backgroundColor: '#17784F',
+    backgroundColor: PRIMARY_DARK,
   },
   primaryButtonText: {
-    color: '#FFFFFF',
+    color: colors.textInverse,
     fontSize: 16,
     fontWeight: '600',
     fontFamily: typography.fontFamilyMedium,
@@ -370,7 +394,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   footerMuted: {
-    color: '#6B7280',
+    color: MUTED,
     fontSize: 14,
     fontFamily: typography.fontFamily,
   },

@@ -1,6 +1,16 @@
 /**
  * RecycleRight Pakistan — Household Login Screen
  *
+ * Polish pass:
+ *   - Theme consistency: PRIMARY/PANEL_BG and all hex literals in styles
+ *     now sourced from ../../collector/theme.js. Subtle placeholder shade
+ *     (#9CA3AF) kept as documented exception (not in shared theme).
+ *   - Keyboard avoidance: behavior is now
+ *     `Platform.OS === 'ios' ? 'padding' : 'height'` so the Sign In button
+ *     stays reachable while the soft keyboard is up on Android too.
+ *   - Typography audit: brand 28pt/700, card heading 22pt/700, button
+ *     16pt/600, helper text 12–14pt.
+ *
  * Mirrors the Collector login layout: green hero panel up top, white card
  * with the login form floating over it. No backend wiring — pressing
  * "Sign In" hands the mock householdProfile straight to the dashboard.
@@ -23,8 +33,15 @@ import {
 import { colors, typography } from '../../collector/theme.js';
 import { householdProfile } from '../data/householdMockData.js';
 
-const PRIMARY = '#1E9B6B';
-const PANEL_BG = '#F8FAFB';
+const PRIMARY = colors.primary;
+const PRIMARY_DARK = colors.primaryDark;
+const PANEL_BG = colors.background;
+const SURFACE = colors.surface;
+const TEXT = colors.text;
+const MUTED = colors.textMuted;
+const BORDER = colors.border;
+const SHADOW = colors.shadow;
+const SUBTLE = '#9CA3AF'; // not in shared theme — documented exception
 
 export default function HouseholdLoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -52,7 +69,7 @@ export default function HouseholdLoginScreen({ navigation }) {
       <StatusBar barStyle="light-content" backgroundColor={PRIMARY} />
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView
           contentContainerStyle={styles.scrollContent}
@@ -78,7 +95,7 @@ export default function HouseholdLoginScreen({ navigation }) {
                   value={email}
                   onChangeText={setEmail}
                   placeholder="you@email.com"
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor={SUBTLE}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   style={styles.input}
@@ -94,7 +111,7 @@ export default function HouseholdLoginScreen({ navigation }) {
                   value={password}
                   onChangeText={setPassword}
                   placeholder="Your password"
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor={SUBTLE}
                   secureTextEntry={!showPassword}
                   style={styles.input}
                 />
@@ -168,7 +185,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 24,
   },
   brand: {
-    color: '#FFFFFF',
+    color: colors.textInverse,
     fontSize: 28,
     fontWeight: '700',
     textAlign: 'center',
@@ -177,19 +194,19 @@ const styles = StyleSheet.create({
   },
   brandSubtitle: {
     marginTop: 6,
-    color: '#FFFFFF',
+    color: colors.textInverse,
     opacity: 0.85,
     fontSize: 14,
     textAlign: 'center',
     fontFamily: typography.fontFamily,
   },
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: SURFACE,
     marginTop: -36,
     marginHorizontal: 16,
     borderRadius: 20,
     padding: 22,
-    shadowColor: '#0F172A',
+    shadowColor: SHADOW,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 12,
@@ -198,13 +215,13 @@ const styles = StyleSheet.create({
   cardHeading: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#1A1A2E',
+    color: TEXT,
     fontFamily: typography.fontFamilyMedium,
   },
   cardSubtext: {
     marginTop: 4,
     fontSize: 14,
-    color: '#6B7280',
+    color: MUTED,
     marginBottom: 18,
     fontFamily: typography.fontFamily,
   },
@@ -213,16 +230,16 @@ const styles = StyleSheet.create({
   },
   fieldLabel: {
     fontSize: 12,
-    color: '#6B7280',
+    color: MUTED,
     marginBottom: 6,
     fontFamily: typography.fontFamily,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: SURFACE,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: BORDER,
     borderRadius: 8,
     paddingHorizontal: 12,
     minHeight: 48,
@@ -260,10 +277,10 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   primaryButtonPressed: {
-    backgroundColor: '#17784F',
+    backgroundColor: PRIMARY_DARK,
   },
   primaryButtonText: {
-    color: '#FFFFFF',
+    color: colors.textInverse,
     fontSize: 16,
     fontWeight: '600',
     fontFamily: typography.fontFamilyMedium,
@@ -275,7 +292,7 @@ const styles = StyleSheet.create({
     marginTop: 18,
   },
   footerMuted: {
-    color: '#6B7280',
+    color: MUTED,
     fontSize: 14,
     fontFamily: typography.fontFamily,
   },
@@ -290,7 +307,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   forgotText: {
-    color: '#6B7280',
+    color: MUTED,
     fontSize: 13,
     fontFamily: typography.fontFamily,
   },

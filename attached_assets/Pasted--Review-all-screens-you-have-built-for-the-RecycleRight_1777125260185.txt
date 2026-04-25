@@ -1,0 +1,13 @@
+
+Review all screens you have built for the RecycleRight Household app and apply the following polish pass. Do not change any logic or navigation — only visual and UX refinements:
+
+•	1. Theme consistency: every screen must use colours and spacing exclusively from ../../collector/theme.js — no hardcoded hex values or magic numbers outside the theme file. Find and fix any screen that uses a raw colour string directly. Create a quick grep pass and list what you fixed.
+•	2. Skeleton loaders: every data-displaying screen (HomeDashboardScreen, PickupHistoryScreen) must show a skeleton loader for 1.2 seconds on mount before rendering mock data. Create a single reusable SkeletonBlock component in components/SkeletonBlock.js: props width, height, borderRadius. Animate opacity between 0.3 and 0.8 using Animated.loop. Use it in both screens.
+•	3. Empty states: PickupHistoryScreen empty state already built in Prompt 5. HomeDashboardScreen must show a gentle empty state in the Recent Pickups section if pickupRequests is empty: '📭' 32pt, 'No pickups yet' 15pt fontWeight 600, 'Submit your first pickup request to get started.' 13pt #6B7280, and a small 'Request Pickup' link in #1E9B6B below.
+•	4. Haptic feedback: on 'Submit Pickup Request', 'Upload and Continue', and 'Create Account' button presses, trigger Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) from expo-haptics. Wrap in try/catch for graceful degradation.
+•	5. Typography audit: all screen titles via HeaderBar must be 18pt fontWeight 700. Section headings 15pt fontWeight 600. Body text 14pt fontWeight 400. Muted/helper text 12pt. Points figures get special treatment: 40pt+ fontWeight 800. Fix any screen that deviates.
+•	6. Safe areas: confirm every root View uses SafeAreaView from 'react-native-safe-area-context'. Confirm BottomTabBar uses useSafeAreaInsets().bottom for the bottom padding. Verify LiveMapTrackingScreen handles overlapping floating cards correctly on notched devices.
+•	7. Keyboard avoidance: Registration and Login screens must use KeyboardAvoidingView with behavior Platform.OS === 'ios' ? 'padding' : 'height'. Ensure the Submit/Sign In button is reachable when keyboard is open.
+•	8. Points animation: on HomeDashboardScreen, when the PointsBalanceCard mounts, animate the points number counting up from 0 to the real value over 800ms using Animated.timing on a numeric animated value and interpolation. This makes the dashboard feel alive.
+
+Output only the files that changed, with a brief comment at the top of each file explaining what was fixed in the polish pass.

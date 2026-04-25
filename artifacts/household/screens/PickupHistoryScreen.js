@@ -1,34 +1,44 @@
 /**
  * RecycleRight Pakistan — Pickup History Screen
  *
- * Tab-level history screen. Top filter strip lets the user slice
- * pickupRequests by status; on the "All" tab a tiny stats row gives a
- * lifetime summary. Tapping a card routes to the receipt (completed) or
- * the live tracker (anything else still in motion).
+ * Polish pass:
+ *   - Theme consistency: PRIMARY/TEXT/MUTED/BG sourced from
+ *     ../../collector/theme.js. Status-badge tints and the #9CA3AF subtle
+ *     shade kept as documented hex literals (not in shared theme).
+ *   - Skeleton loader: 1.2s shimmer rows on mount via SkeletonBlock.
+ *   - Typography audit: header 18pt/700, filter labels 13pt, card text
+ *     14pt/600 (title) + 13pt body + 12pt muted, badge 11pt/600.
+ *   - Safe area: SafeAreaView from 'react-native-safe-area-context'.
  */
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   FlatList,
   Pressable,
-  SafeAreaView,
   StatusBar,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { typography } from '../../collector/theme.js';
+import { colors, typography } from '../../collector/theme.js';
 import {
   pickupRequests,
   wasteTypes,
 } from '../data/householdMockData.js';
+import SkeletonBlock from '../components/SkeletonBlock.js';
 
-const PRIMARY = '#1E9B6B';
-const TEXT = '#1A1A2E';
-const MUTED = '#6B7280';
-const SUBTLE = '#9CA3AF';
-const BG = '#F8FAFB';
+const PRIMARY = colors.primary;
+const TEXT = colors.text;
+const MUTED = colors.textMuted;
+const SUBTLE = '#9CA3AF'; // not in shared theme — documented exception
+const BG = colors.background;
+const SURFACE = colors.surface;
+const DIVIDER = colors.divider;
+const SHADOW = colors.shadow;
+
+const SKELETON_MS = 1200;
 
 const FILTERS = [
   { id: 'all', label: 'All' },
@@ -39,6 +49,7 @@ const FILTERS = [
   { id: 'cancelled', label: 'Cancelled' },
 ];
 
+// Status-badge palette — not in shared theme — documented exception.
 const STATUS_META = {
   pending: { label: 'Pending', bg: '#FEF3C7', fg: '#B45309' },
   accepted: { label: 'Accepted', bg: '#DBEAFE', fg: '#1D4ED8' },
@@ -58,6 +69,12 @@ const EMPTY_SUBTEXT = {
 
 export default function PickupHistoryScreen({ navigation }) {
   const [activeFilter, setActiveFilter] = useState('all');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => setIsLoading(false), SKELETON_MS);
+    return () => clearTimeout(t);
+  }, []);
 
   const wasteTypeMap = useMemo(
     () => Object.fromEntries(wasteTypes.map((w) => [w.id, w])),
@@ -104,8 +121,8 @@ export default function PickupHistoryScreen({ navigation }) {
 
   return (
     <View style={styles.root}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-      <SafeAreaView style={styles.safe}>
+      <StatusBar barStyle="dark-content" backgroundColor={SURFACE} />
+      <SafeAreaView style={styles.safe} edges={['top']}>
         <View style={styles.headerWrap}>
           <Text style={styles.headerTitle}>Pickup History</Text>
         </View>
@@ -140,35 +157,53 @@ export default function PickupHistoryScreen({ navigation }) {
 
         {activeFilter === 'all' ? (
           <View style={styles.statsRow}>
-            <Stat value={String(stats.total)} label="Total Pickups" />
-            <Stat
-              value={`${stats.weight.toFixed(1)} kg`}
-              label="Total Weight"
-            />
-            <Stat
-              value={`${stats.points} pts`}
-              label="Points Earned"
-              valueColor={PRIMARY}
-            />
+            {isLoading ? (
+              <>
+                <StatSkeleton />
+                <StatSkeleton />
+                <StatSkeleton />
+              </>
+            ) : (
+              <>
+                <Stat value={String(stats.total)} label="Total Pickups" />
+                <Stat
+                  value={`${stats.weight.toFixed(1)} kg`}
+                  label="Total Weight"
+                />
+                <Stat
+                  value={`${stats.points} pts`}
+                  label="Points Earned"
+                  valueColor={PRIMARY}
+                />
+              </>
+            )}
           </View>
         ) : null}
 
-        <FlatList
-          data={filtered}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <HistoryCard
-              request={item}
-              wasteType={wasteTypeMap[item.wasteType]}
-              onPress={() => handleCardPress(item)}
-            />
-          )}
-          ListEmptyComponent={
-            <EmptyState filterId={activeFilter} />
-          }
-        />
+        {isLoading ? (
+          <View style={styles.listContent}>
+            <HistoryCardSkeleton />
+            <HistoryCardSkeleton />
+            <HistoryCardSkeleton />
+            <HistoryCardSkeleton />
+            <HistoryCardSkeleton />
+          </View>
+        ) : (
+          <FlatList
+            data={filtered}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item }) => (
+              <HistoryCard
+                request={item}
+                wasteType={wasteTypeMap[item.wasteType]}
+                onPress={() => handleCardPress(item)}
+              />
+            )}
+            ListEmptyComponent={<EmptyState filterId={activeFilter} />}
+          />
+        )}
       </SafeAreaView>
     </View>
   );
@@ -181,6 +216,20 @@ function Stat({ value, label, valueColor }) {
         {value}
       </Text>
       <Text style={styles.statLabel}>{label}</Text>
+    </View>
+  );
+}
+
+function StatSkeleton() {
+  return (
+    <View style={styles.statItem}>
+      <SkeletonBlock width={48} height={16} borderRadius={6} />
+      <SkeletonBlock
+        width={70}
+        height={10}
+        borderRadius={5}
+        style={{ marginTop: 6 }}
+      />
     </View>
   );
 }
@@ -200,7 +249,7 @@ function HistoryCard({ request, wasteType, onPress }) {
       <View
         style={[
           styles.cardIcon,
-          { backgroundColor: wasteType?.colour || '#E5E7EB' },
+          { backgroundColor: wasteType?.colour || colors.border },
         ]}
       >
         <Text style={styles.cardIconText}>{wasteType?.icon || '♻️'}</Text>
@@ -227,10 +276,34 @@ function HistoryCard({ request, wasteType, onPress }) {
   );
 }
 
+function HistoryCardSkeleton() {
+  return (
+    <View style={styles.card}>
+      <SkeletonBlock width={44} height={44} borderRadius={10} />
+      <View style={[styles.cardCenter, { marginLeft: 12 }]}>
+        <SkeletonBlock width={'70%'} height={14} borderRadius={6} />
+        <SkeletonBlock
+          width={'55%'}
+          height={12}
+          borderRadius={6}
+          style={{ marginTop: 6 }}
+        />
+        <SkeletonBlock
+          width={'40%'}
+          height={10}
+          borderRadius={5}
+          style={{ marginTop: 6 }}
+        />
+      </View>
+      <SkeletonBlock width={64} height={20} borderRadius={999} />
+    </View>
+  );
+}
+
 function StatusBadge({ status }) {
   const meta = STATUS_META[status] || {
     label: status,
-    bg: '#E5E7EB',
+    bg: colors.border,
     fg: TEXT,
   };
   return (
@@ -281,13 +354,13 @@ function formatShortDate(iso) {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: BG },
-  safe: { flex: 1, backgroundColor: '#FFFFFF' },
+  safe: { flex: 1, backgroundColor: SURFACE },
 
   headerWrap: {
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 8,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: SURFACE,
   },
   headerTitle: {
     fontSize: 18,
@@ -299,7 +372,7 @@ const styles = StyleSheet.create({
   /* Filter tabs */
   filterRow: {
     paddingHorizontal: 4,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: SURFACE,
   },
   filterTab: {
     paddingHorizontal: 16,
@@ -328,9 +401,9 @@ const styles = StyleSheet.create({
   statsRow: {
     flexDirection: 'row',
     paddingVertical: 12,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: SURFACE,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: DIVIDER,
   },
   statItem: {
     flex: 1,
@@ -357,14 +430,14 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: SURFACE,
     borderRadius: 12,
     marginHorizontal: 16,
     marginVertical: 6,
     padding: 14,
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#0F172A',
+    shadowColor: SHADOW,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 4,

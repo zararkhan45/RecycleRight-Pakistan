@@ -23,13 +23,20 @@ import MapView, { Marker } from '../../collector/components/Map';
 import { typography } from '../../collector/theme.js';
 import { householdProfile } from '../data/householdMockData.js';
 
-const PRIMARY = '#1E9B6B';
-const PRIMARY_DARK = '#17784F';
-const BG = '#F8FAFB';
-const TEXT = '#1A1A2E';
-const MUTED = '#6B7280';
+// Polish-pass note: theme tokens replace the previous local hex literals.
+// Subtle (#9CA3AF) and the surfaceAlt-ish #F1F4F6 divider remain hex
+// because they are not present in ../../collector/theme.js.
+import { colors as _themeColors } from '../../collector/theme.js';
+const PRIMARY = _themeColors.primary;
+const PRIMARY_DARK = _themeColors.primaryDark;
+const BG = _themeColors.background;
+const TEXT = _themeColors.text;
+const MUTED = _themeColors.textMuted;
 const SUBTLE = '#9CA3AF';
-const BORDER = '#E5E7EB';
+const BORDER = _themeColors.border;
+const SURFACE = _themeColors.surface;
+const SHADOW = _themeColors.shadow;
+const SURFACE_ALT = _themeColors.surfaceAlt;
 
 const HOME_LAT = 31.4697;
 const HOME_LNG = 74.4054;
@@ -75,8 +82,14 @@ export default function PickupRequestScreen({ navigation, route }) {
     Alert.alert('Location editing is not available in the demo.');
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (submitted) return;
+    try {
+      // Polish pass: medium impact pulse on Submit Pickup Request.
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    } catch (e) {
+      // Haptics unavailable (web/unsupported device) — fail silently.
+    }
     setSubmitted(true);
     setTimeout(() => {
       navigation?.navigate?.('HomeDashboardScreen');

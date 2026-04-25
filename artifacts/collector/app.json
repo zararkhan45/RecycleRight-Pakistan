@@ -21,17 +21,10 @@
       "favicon": "./assets/images/icon.png"
     },
     "plugins": [
-      [
-        "expo-router",
-        {
-          "origin": "https://replit.com/"
-        }
-      ],
       "expo-font",
       "expo-web-browser"
     ],
     "experiments": {
-      "typedRoutes": true,
       "reactCompiler": true
     }
   }

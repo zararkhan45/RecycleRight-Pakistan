@@ -1,0 +1,27 @@
+Build HouseholdRegistrationScreen.js and HouseholdLoginScreen.js for the RecycleRight Pakistan Household app. Import all colours and typography from ../../collector/theme.js. Import mock data from ../data/householdMockData.js.
+
+HouseholdRegistrationScreen.js
+•	Full-screen KeyboardAvoidingView with ScrollView. Header: solid #1E9B6B panel, top 30% of visual space, with 'RecycleRight' wordmark in white bold 28pt centred, subtitle 'Household Portal' in white 14pt opacity 0.85.
+•	White card overlapping the green panel (negative marginTop -32, borderRadius 20, elevation 4, marginHorizontal 16) containing all form fields.
+•	Form fields in order (each with label above input, 12pt #6B7280 label, 15pt input, borderRadius 8, border #E5E7EB, padding 14, left icon using emoji):
+◦	Full Name — icon '👤', placeholder 'Fatima Malik'
+◦	Email — icon '✉️', keyboardType email-address, placeholder 'you@email.com'
+◦	Phone — icon '📱', keyboardType phone-pad, placeholder '0300-1234567'
+◦	Address — icon '📍', multiline, numberOfLines 2, placeholder 'House No., Street, Area, Lahore'
+◦	Password — icon '🔒', secureTextEntry toggle on right
+◦	Confirm Password — icon '🔒', secureTextEntry, validate match on blur
+•	Inline validation: if confirm password does not match, show 'Passwords do not match' in #EF4444 below the field, 12pt. No form submission until all fields are non-empty and passwords match.
+•	'Create Account' button: full width, #1E9B6B, borderRadius 24, height 52, white text 16pt fontWeight 600. On press (valid form): navigate to HomeDashboardScreen passing householdProfile from mockData.
+•	Below button: 'Already have an account? Sign In' — the 'Sign In' text is #1E9B6B and navigates to HouseholdLoginScreen.
+•	No backend call — use mock data. Show no loading spinner.
+
+HouseholdLoginScreen.js
+•	Identical split layout to Zarar's CollectorLoginScreen: top 35% solid #1E9B6B green panel with 'RecycleRight' wordmark white 28pt bold centred, subtitle 'Household Portal' 14pt white opacity 0.85.
+•	Bottom 65% off-white #F8FAFB background. White card (borderRadius 20, elevation 4, marginHorizontal 16, marginTop -36) with heading 'Welcome back' 22pt #1A1A2E fontWeight 700, subtext 'Sign in to manage your pickups' 14pt #6B7280.
+•	Two inputs: Email (icon '✉️') and Password (icon '🔒') with show/hide toggle. Same styling as Registration inputs.
+•	'Sign In' button: full width, #1E9B6B, borderRadius 24, height 52, white text 16pt fontWeight 600. On press: navigate to HomeDashboardScreen passing householdProfile.
+•	Below button: 'Don't have an account? Register' — 'Register' in #1E9B6B navigates to HouseholdRegistrationScreen.
+•	Below that: 'Forgot Password?' in #6B7280 — shows Alert 'Password reset is not available in the demo.'
+•	No backend call.
+
+Output both complete files.

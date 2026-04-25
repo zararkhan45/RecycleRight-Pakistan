@@ -1,0 +1,45 @@
+Build HomeDashboardScreen.js for the RecycleRight Pakistan Household app. This is a tab screen (no back arrow). Import from ../../collector/theme.js and ../data/householdMockData.js.
+
+•	Root: SafeAreaView + ScrollView, background #F8FAFB.
+
+Section 1 — Top Header Bar
+•	White background, paddingHorizontal 20, paddingTop 8, paddingBottom 12. Row layout:
+◦	Left: 'Good morning,' in 13pt #6B7280, then user's name in 16pt #1A1A2E fontWeight 700 below it.
+◦	Right: a circular avatar (40x40, background #1E9B6B, white initials 'FM' 16pt fontWeight 700) + a notification bell '🔔' with a small red dot badge (8x8 circle, #EF4444, positioned absolute top-right of bell).
+
+Section 2 — Green Points Balance Card (PointsBalanceCard.js component)
+•	Full-width card, marginHorizontal 16, borderRadius 16, background #1E9B6B, padding 20, elevation 3.
+•	Top row: 'Your Green Points' in white 13pt opacity 0.85, right-aligned tier badge (e.g. '🥇 Gold') in a white semi-transparent pill (background rgba(255,255,255,0.2), borderRadius 12, paddingHorizontal 10, paddingVertical 4, 12pt white).
+•	Middle: points number in white 40pt fontWeight 800 (e.g. '1,240'). Below: 'points' in white 14pt opacity 0.7.
+•	Bottom row: progress bar towards next tier. Show 'Silver → Gold: 1,000 / 2,500 pts' style text in white 12pt opacity 0.85. A horizontal progress track (height 6, borderRadius 3, background rgba(255,255,255,0.3)) with filled portion in white, width proportional to progress.
+
+Section 3 — Quick Actions Row
+•	Section title: 'Quick Actions' in 15pt fontWeight 600 #1A1A2E, marginHorizontal 16, marginTop 20.
+•	A horizontal ScrollView (no scroll indicator) with 4 action cards, each 80x80, borderRadius 12, white background, elevation 2, marginRight 12, alignItems center, justifyContent center:
+◦	'Log Waste' — icon '♻️', label below in 11pt #1A1A2E fontWeight 600. On press: navigate to WasteLoggingScreen.
+◦	'Request Pickup' — icon '🚛'. On press: navigate to PickupRequestScreen.
+◦	'Track Collector' — icon '📍'. On press: navigate to LiveMapTrackingScreen.
+◦	'My History' — icon '📋'. On press: navigate to PickupHistoryScreen.
+
+Section 4 — Active Request Banner (conditional)
+•	If pickupRequests has any item with status 'en_route' or 'accepted', show a prominent banner card (marginHorizontal 16, marginTop 16, borderRadius 12, background #E8F5EE, border 1.5px solid #1E9B6B, padding 14, elevation 0):
+◦	Left: green pulsing dot (8x8 circle, Animated.loop on opacity between 0.4 and 1.0) + 'Collector En Route' in #1E9B6B 14pt fontWeight 600.
+◦	Below: collector name and '~6 min away' in 13pt #1A1A2E.
+◦	Right: 'Track Now ›' in #1E9B6B 13pt fontWeight 600. Tapping navigates to LiveMapTrackingScreen.
+•	If no active request, do not render this section.
+
+Section 5 — Recent Pickups
+•	Section title row: 'Recent Pickups' 15pt fontWeight 600 #1A1A2E, with 'See All' in #1E9B6B 13pt on the right. 'See All' navigates to PickupHistoryScreen.
+•	Show the 3 most recent pickupRequests as PickupStatusCard components. Each card:
+◦	White card, borderRadius 12, marginHorizontal 16, marginVertical 5, elevation 2, padding 14.
+◦	Left: coloured square icon (waste type colour from wasteTypes array), 44x44, borderRadius 10, centred emoji.
+◦	Centre: area name 14pt fontWeight 600 #1A1A2E, waste type + weight estimate 13pt #6B7280, submitted date 12pt #9CA3AF.
+◦	Right: StatusBadge component + points earned if completed ('+120 pts' in #1E9B6B 12pt fontWeight 600).
+
+Section 6 — Environmental Impact Summary
+•	A white card (marginHorizontal 16, marginTop 12, borderRadius 12, elevation 2, padding 16):
+◦	Title: 'Your Impact' 15pt fontWeight 600 #1A1A2E.
+◦	Three stats in a row, each flex 1, centred: '12.4 kg' / 'Waste Recycled' — '3' / 'Pickups Done' — '1,240' / 'Points Earned'. Each: big number 22pt fontWeight 700 #1E9B6B, label 11pt #6B7280 below.
+•	Bottom tab bar from BottomTabBar.js — 4 tabs: Home (🏠), Log (♻️), History (📋), Profile (👤).
+
+Output the complete file only.

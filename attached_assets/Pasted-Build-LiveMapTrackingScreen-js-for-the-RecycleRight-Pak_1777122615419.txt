@@ -1,0 +1,20 @@
+Build LiveMapTrackingScreen.js for the RecycleRight Pakistan Household app. Import from ../../collector/theme.js and ../data/householdMockData.js. Use Map.native.js / Map.web.js shim exactly as done in artifacts/collector/components/.
+
+•	Full-screen MapView showing Lahore. Region centred between the collector's mock position and the household address — compute the midpoint and use a latitudeDelta/longitudeDelta that fits both markers with padding.
+•	Two markers on the map:
+◦	Household marker: a white circle (32x32, borderRadius 16, border 2px #1E9B6B, elevation 3) with '🏠' emoji centred inside. Label: 'Your Location' below marker.
+◦	Collector marker: a #1E9B6B circle (36x36, borderRadius 18, elevation 3) with '🚛' emoji centred. Label: 'Collector' below.
+•	Polyline from collector's mock position to household address coordinates, colour #1E9B6B, strokeWidth 3, lineDashPattern [8, 4] for dashed effect.
+•	Simulate collector movement: on mount, use setInterval every 3 seconds to update collectorLat/collectorLng by incrementally moving the collector 0.0005 degrees closer to the household. Stop simulation when collector is within 0.001 degrees of destination. Clear interval on component unmount.
+•	Animated pulsing ring on collector marker: use Animated.loop + Animated.sequence to scale a transparent green ring from 1.0 to 2.0 and fade from 0.6 to 0, on a 1.5s cycle. Position the ring as an absolute overlay behind the collector marker View.
+•	Floating top card (white, borderRadius 16, elevation 4, marginHorizontal 12, marginTop 12 + safe area, padding 14):
+◦	Row: green pulsing dot (8x8, #1E9B6B, animated opacity 0.4-1.0) + 'Live Tracking' label 12pt #6B7280. Right: 'LIVE' badge (background #EF4444, white text 10pt fontWeight 700, borderRadius 4, paddingHorizontal 8, paddingVertical 2).
+◦	Collector name 18pt fontWeight 700 #1A1A2E below.
+◦	ETA row: '⏱ ~6 min away' in 14pt #1A1A2E. Star rating: '⭐ 4.7' in 13pt #6B7280 on the right.
+•	Floating bottom card (white, borderRadius 16, elevation 4, marginHorizontal 12, marginBottom 12 + safe area, padding 16):
+◦	Row: collector vehicle type + license plate in 13pt #6B7280. Phone icon '📞' button on right (TouchableOpacity, shows Alert 'Calling [name]...' on press).
+◦	Active request summary: waste type chip + weight.
+◦	'Cancel Request' button: outlined, border #EF4444, text #EF4444, borderRadius 12, height 40, full width, fontWeight 600 14pt. On press: Alert with confirmation 'Cancel this pickup request? This cannot be undone.' with 'Yes, Cancel' (red) and 'Keep It' options.
+•	Bottom tab bar from BottomTabBar.js.
+
+Output the complete file only.

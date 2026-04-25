@@ -1,0 +1,27 @@
+kind = "mobile"
+previewPath = "/"
+title = "RecycleRight Collector"
+version = "1.0.0"
+id = "artifacts/collector"
+router = "expo-domain"
+
+[[integratedSkills]]
+name = "expo"
+version = "1.0.0"
+
+[[services]]
+ensurePreviewReachable = "/status"
+name = "expo"
+paths = [ "/" ]
+localPort = 19397
+
+[services.development]
+run = "pnpm --filter @workspace/collector run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/collector", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/collector", "run", "serve" ]
+
+[services.env]
+PORT = "19397"
+BASE_PATH = "/"

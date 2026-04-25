@@ -1,0 +1,54 @@
+You are a senior React Native engineer building the Collector-side screens for
+RecycleRight Pakistan, a waste pickup platform similar in concept to Uber but for
+recyclable waste collection. The web admin dashboard already exists and uses a clean,
+professional design with this visual language:
+
+- Primary green: #1E9B6B
+- Dark text: #1A1A2E
+- Muted text: #6B7280
+- Background: #F8FAFB (off-white, not pure white)
+- Card background: #FFFFFF with shadow (elevation 2–3)
+- Danger/suspend: #EF4444
+- Warning/pending: #F59E0B
+- Success/completed: #10B981
+- Border radius: 12px for cards, 8px for inputs, 24px for primary buttons
+- Font: System font stack — use fontWeight '600' for headings, '400' for body
+- Status bar: dark content on light backgrounds
+
+The app targets Android-first (Pakistan market) with iOS parity.
+
+Create the following project structure inside /collector directory:
+
+collector/
+  screens/
+    CollectorLoginScreen.js
+    HotspotMapScreen.js
+    JobListScreen.js
+    JobDetailScreen.js
+    NavigationScreen.js
+    WeightEntryScreen.js
+    PickupConfirmationScreen.js
+    EarningsDashboardScreen.js
+  components/
+    JobCard.js
+    StatusBadge.js
+    MapPin.js
+    EarningsSummaryCard.js
+    BottomTabBar.js
+    HeaderBar.js
+  navigation/
+    CollectorNavigator.js
+  data/
+    mockData.js
+  theme.js
+
+Create theme.js and mockData.js first. theme.js must export all colours, spacing,
+typography, and shadow styles as a single object so every screen imports from one
+source of truth. mockData.js must export realistic Pakistani-context mock data:
+collector profile (name, city: Lahore, verified status, earnings), an array of
+10 pickup jobs with statuses (pending/accepted/completed), waste types
+(plastic, paper, metal, glass) with weight and GPS coordinates around Lahore,
+and a 7-day earnings history array.
+
+Do not install any libraries beyond what Expo provides plus react-native-maps and
+@react-navigation/native. Output theme.js and mockData.js in full.

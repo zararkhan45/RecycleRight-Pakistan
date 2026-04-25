@@ -19,7 +19,6 @@ import {
   WASTE_TYPES,
   JOB_STATUSES,
 } from '../data/mockData';
-import BottomTabBar from '../components/BottomTabBar';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SHEET_HEIGHT = 280;
@@ -301,7 +300,6 @@ export default function HotspotMapScreen({ navigation, route }) {
         ) : null}
       </Animated.View>
 
-      <BottomTabBar active={activeTab} onChange={handleTabPress} />
     </View>
   );
 }

@@ -1,0 +1,42 @@
+Build PickupHistoryScreen.js and DigitalReceiptScreen.js. Import from ../../collector/theme.js and ../data/householdMockData.js.
+
+PickupHistoryScreen.js
+•	This is a tab screen. No back button. Root: SafeAreaView + white background header.
+•	Header: 'Pickup History' 18pt fontWeight 700 #1A1A2E, paddingHorizontal 16, paddingTop 16. No back arrow.
+•	Filter tabs: horizontal FlatList with no scroll indicator, tabs: 'All', 'Pending', 'Accepted', 'En Route', 'Completed', 'Cancelled'. Active tab: #1A1A2E text fontWeight 600 with a 2px #1E9B6B underline. Inactive: #9CA3AF. Tabs have paddingHorizontal 16 paddingVertical 10. Start on 'All'.
+•	Stats row below filter tabs (visible only on 'All' tab): three compact stats in a row (flex 1 each), paddingVertical 12, borderBottom 1px #F3F4F6:
+◦	Total Pickups: '[N]' fontWeight 700 16pt #1A1A2E, label '12pt #6B7280 below.
+◦	Total Weight: '[X.X] kg'.
+◦	Points Earned: '[N] pts' in #1E9B6B.
+•	A FlatList of pickup request cards filtered by active tab. Each card (white, borderRadius 12, marginHorizontal 16, marginVertical 6, elevation 2, padding 14):
+◦	Left: waste type coloured square (44x44, borderRadius 10) with emoji centred.
+◦	Centre column: area name 14pt fontWeight 600 #1A1A2E, waste type + weight 13pt #6B7280, date 12pt #9CA3AF.
+◦	Right column: StatusBadge component. If status is 'completed': also show points earned in #1E9B6B 12pt fontWeight 600 below badge.
+◦	Tapping a completed card navigates to DigitalReceiptScreen, passing the pickupRequest object. Tapping a non-completed card navigates to LiveMapTrackingScreen.
+•	Empty state (when filtered list is empty): centred '📭' emoji 48pt, 'No [status] pickups' heading 17pt fontWeight 600 #1A1A2E, subtext relevant to filter (e.g. 'All your completed pickups will appear here.') 14pt #6B7280.
+
+DigitalReceiptScreen.js
+•	This is a stack screen (has back arrow). Header: HeaderBar with title 'Digital Receipt', back arrow.
+•	ScrollView, background #F8FAFB.
+•	Receipt card (white, borderRadius 16, marginHorizontal 16, marginTop 16, elevation 3, overflow hidden):
+◦	Top strip (height 8, background #1E9B6B) — decorative green accent.
+◦	Padding 20 inside card.
+◦	RecycleRight logo text 'RecycleRight' 22pt fontWeight 800 #1E9B6B, centred. 'Official Pickup Receipt' 12pt #6B7280 centred below.
+◦	Receipt ID: 'Receipt #[receiptId]' 12pt #9CA3AF centred. Date and time 12pt #9CA3AF centred.
+◦	Divider: dashed border — use a series of small View segments or a borderStyle 'dashed' View, height 0, borderWidth 1, borderColor #E5E7EB.
+◦	Receipt rows in a clean two-column layout (label left #6B7280 14pt, value right #1A1A2E 14pt fontWeight 600):
+               Household Name | [name]
+               Address        | [address]
+               Waste Type     | [type]
+               Weight         | [X.X kg]
+               Collector      | [name]
+               Pickup Date    | [date]
+               Status         | Completed ✓ (in #10B981)
+◦	Second dashed divider.
+◦	Green Points section (centred): '🌱 Green Points Earned' 14pt #6B7280, large '+[N] pts' 36pt fontWeight 800 #1E9B6B, 'Added to your balance' 12pt #6B7280.
+•	Below the receipt card: two buttons, marginHorizontal 16, marginTop 16:
+◦	'Download Receipt' (solid #1E9B6B, borderRadius 24, height 52, full width, white text 16pt fontWeight 600). On press: Alert 'Receipt download is not available in the demo.'
+◦	'Back to History' (outlined #1E9B6B border, same dimensions). On press: navigate back to PickupHistoryScreen.
+•	Animate the receipt card in on mount with a slide-up + fade-in: initial translateY 40 and opacity 0, animate to translateY 0 and opacity 1 over 400ms using Animated.parallel.
+
+Output both complete files.

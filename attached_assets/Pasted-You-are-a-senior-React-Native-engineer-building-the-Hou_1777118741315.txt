@@ -1,0 +1,16 @@
+You are a senior React Native engineer building the Household-side screens for RecycleRight Pakistan, a waste pickup platform similar in concept to Uber but for recyclable waste collection. This is an Expo React Native project already in a GitHub repo. The Collector side (artifacts/collector/) is fully built. You are building artifacts/household/ as a parallel folder.
+
+The design system is already defined in artifacts/collector/theme.js. Import from that file — do not recreate or duplicate it. All your screens must import colours, spacing, and typography from that shared theme.js.
+
+Create only one file right now: artifacts/household/data/householdMockData.js
+
+This file must export the following mock data that every Household screen will use:
+
+•	householdProfile — object with: id, name ('Fatima Malik'), email, phone (03XX format), city ('Lahore'), address ('House 14, Street 7, DHA Phase 5, Lahore'), greenPoints (1240), memberSince ('March 2024'), avatar initials ('FM'), verified (true)
+•	pickupRequests — array of 8 objects, each with: id, status (pending/accepted/en_route/completed/cancelled), wasteType (plastic/paper/metal/glass), estimatedWeight (number in kg), scheduledDate, area (Lahore neighbourhood names: DHA Phase 5, Gulberg III, Model Town, Bahria Town, Johar Town, Garden Town, Cavalry Ground, Cantt), collectorName (Pakistani male names), collectorPhone, submittedAt, completedAt (null if not completed), pointsEarned (null if not completed), receiptId (null if not completed)
+•	wasteTypes — array of objects: { id, label, icon (emoji), colour (hex), pointsPerKg } — cover plastic (10 pts/kg, blue #3B82F6), paper (5 pts/kg, yellow #F59E0B), metal (8 pts/kg, grey #6B7280), glass (6 pts/kg, teal #14B8A6), organic (3 pts/kg, brown #92400E), electronics (15 pts/kg, purple #8B5CF6)
+•	recentActivity — array of 5 log entries: { id, type ('pickup'|'points_credited'|'request_submitted'), description, timestamp, pointsDelta (positive or zero) }
+•	greenPointsTiers — array of tiers: Bronze (0-499 pts), Silver (500-999), Gold (1000-2499), Platinum (2500+) — include perksDescription per tier
+•	collectorOnRoute — single object simulating the collector currently en route to user: { name, phone, currentLat, currentLng, eta ('~6 min'), vehicleType ('Motorcycle'), licensePlate, rating (4.7) }. Use Lahore coordinates ~500m from DHA Phase 5 as starting point (lat: 31.4716, lng: 74.4008)
+
+Use realistic Pakistani names, Lahore neighbourhood names, and PKR context throughout. Output the complete householdMockData.js file only.

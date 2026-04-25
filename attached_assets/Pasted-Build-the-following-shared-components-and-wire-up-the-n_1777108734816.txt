@@ -1,0 +1,41 @@
+Build the following shared components and wire up the navigator.
+
+--- components/BottomTabBar.js ---
+A custom bottom tab bar component (not using React Navigation's default tab bar —
+we want full control over styling).
+
+Props: activeTab (string), onTabChange (function).
+Tabs: { id: 'map', label: 'Map', icon: '🗺️' }, { id: 'jobs', label: 'Jobs', icon: '📋' },
+      { id: 'earnings', label: 'Earnings', icon: '💰' }, { id: 'profile', label: 'Profile', icon: '👤' }
+
+Styling: white background, borderTopWidth 1, borderTopColor #F3F4F6, paddingBottom 8
+(safe area). Each tab is a TouchableOpacity with flex 1, alignItems center. Active tab:
+icon + label in #1E9B6B, fontWeight 600. Inactive: #9CA3AF.
+
+--- components/StatusBadge.js ---
+Props: status ('pending' | 'accepted' | 'completed' | 'missed')
+Renders a small pill: padding horizontal 10, vertical 4, borderRadius 12.
+pending  → background #FEF3C7, text #92400E, label "Pending"
+accepted → background #D1FAE5, text #065F46, label "Accepted"
+completed→ background #E5E7EB, text #374151, label "Completed"
+missed   → background #FEE2E2, text #991B1B, label "Missed"
+Text: 11pt, fontWeight 600.
+
+--- components/HeaderBar.js ---
+Props: title (string), showBack (bool), onBack (function), rightComponent (node)
+A safe-area-aware header. Height 56px + safe area top. White background, elevation 1.
+Back arrow: "←" in #1E9B6B, 22pt, paddingLeft 16. Title: centred, 17pt fontWeight 700,
+#1A1A2E. RightComponent positioned absolutely to the right.
+
+--- navigation/CollectorNavigator.js ---
+A React Navigation Stack + custom tab implementation:
+- Stack: Login → Main (tab container)
+- The "Main" screen is a custom tab container that renders the correct screen based
+  on the activeTab state, with BottomTabBar at the bottom.
+- Tab screens: HotspotMapScreen (map), JobListScreen (jobs),
+  EarningsDashboardScreen (earnings), a simple ProfileScreen placeholder
+  (just show collector name, city, verified badge, and a logout button).
+- The Stack handles NavigationScreen, JobDetailScreen, WeightEntryScreen,
+  PickupConfirmationScreen as modals pushed on top.
+
+Output all files in full.

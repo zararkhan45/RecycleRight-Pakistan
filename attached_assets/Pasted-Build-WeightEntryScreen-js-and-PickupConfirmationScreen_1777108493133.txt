@@ -1,0 +1,47 @@
+Build WeightEntryScreen.js and PickupConfirmationScreen.js.
+
+--- WeightEntryScreen.js ---
+The collector has arrived. They weigh the waste and enter it here.
+
+Layout:
+- Header: back arrow + "Confirm Weight".
+- A prominent illustration section at top: a simple emoji-based visual ("⚖️") in a
+  large circle (#E8F5EE background, #1E9B6B border, 100px diameter, centred).
+- Below: "Enter collected weight" as a label (16pt, fontWeight 600).
+- A custom large number input: the weight value displayed in 48pt, fontWeight 700,
+  #1A1A2E, centred. Below it, "kilograms" in 14pt, #6B7280. The actual TextInput
+  is hidden but focused — use a custom keypad OR a visible TextInput styled to look
+  prominent. Use keyboardType="decimal-pad".
+- Waste type chips row: horizontal scroll of chips for plastic/paper/metal/glass.
+  The chip matching the accepted job's waste type is pre-selected (green background,
+  white text). Others are outlined. Tapping changes selection.
+- A "Photo Evidence" section: a dashed-border rectangle (border: 1.5px dashed
+  #9CA3AF, borderRadius 12, height 100, centred). Inside: camera icon "📷" and
+  "Tap to add photo (optional)" in grey. This is a placeholder — no actual camera
+  integration needed.
+- "Confirm Pickup" button (full width, solid green, 52px, borderRadius 24). On press:
+  navigate to PickupConfirmationScreen, passing weight, wasteType, and job.
+
+--- PickupConfirmationScreen.js ---
+Success state after a pickup is confirmed.
+
+Layout:
+- No navigation header. Full-screen, centred vertically.
+- Large animated checkmark: a circle (#1E9B6B, 100px) with a white "✓" (48pt).
+  Animate it with a scale-in + fade-in on mount using Animated.spring.
+- "Pickup Confirmed!" heading (24pt, fontWeight 700, #1A1A2E).
+- Subtitle: "Green Points have been credited to the household."
+- A receipt card (white, borderRadius 16, elevation 3, padding 20, margin horizontal
+  24, marginTop 24):
+    Row: Waste Type | [value]
+    Row: Weight Collected | [X.X kg]
+    Row: Household Area | [area name]
+    Row: Time | [current time]
+    Divider line
+    Row: "Points Awarded to Household" | +[calculated] pts (green, fontWeight 700)
+  Points formula: plastic=10/kg, metal=8/kg, paper=5/kg, glass=6/kg.
+- Two buttons at bottom:
+    "View Earnings" (solid green, full width) → navigate to EarningsDashboardScreen
+    "Back to Map" (outlined green) → navigate back to HotspotMapScreen and reset stack
+
+Output both complete files.

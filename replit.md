@@ -43,4 +43,29 @@ This is the RecycleRight Pakistan project. Three runnable artifacts plus shared 
 
 Note: the `artifact.toml` files exist on disk but the artifacts are not registered in the workspace artifact registry, so previews are accessed via the workflow webview (Collector App) rather than the artifact dropdown.
 
+## Running outside Replit (local machine)
+
+Prerequisites:
+- Node.js 24+
+- pnpm 9+ (`npm install -g pnpm`)
+- For the mobile app: Expo Go installed on your phone (or an Android/iOS simulator)
+
+Setup:
+```
+pnpm install
+```
+
+Run each app in its own terminal:
+```
+pnpm --filter @workspace/api-server  run dev          # http://localhost:8080
+pnpm --filter @workspace/mockup-sandbox run dev        # http://localhost:5173
+pnpm --filter @workspace/collector run dev             # Expo dev server, scan QR with Expo Go
+```
+
+Notes:
+- Locally the Collector app does NOT need `PORT=19397` — that's only required by the Replit Expo proxy. Plain `pnpm ... run dev` is fine; Expo will pick its own port.
+- Phone and computer must be on the same Wi‑Fi. If they're on different networks, run Expo with `--tunnel`.
+- `pnpm-workspace.yaml` keeps native binaries for linux-x64, linux-arm64, darwin-x64, darwin-arm64, and win32-x64. Other platforms (FreeBSD, Android-host, etc.) are stripped.
+- The `preinstall` script in `package.json` blocks `npm` and `yarn` — only pnpm works.
+
 See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.

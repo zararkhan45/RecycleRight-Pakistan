@@ -5,18 +5,41 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
+  MutationFunction,
   QueryFunction,
   QueryKey,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
 
-import type { HealthStatus } from "./api.schemas";
+import type {
+  AuthResponse,
+  BadRequestResponse,
+  ConflictResponse,
+  CreatePickupRequest,
+  EarningsSummary,
+  EnterWeightRequest,
+  ForbiddenResponse,
+  GetMyEarningsParams,
+  HealthStatus,
+  Job,
+  ListNearbyJobsParams,
+  LoginRequest,
+  NotFoundResponse,
+  Pickup,
+  PickupDetails,
+  Receipt,
+  RegisterRequest,
+  UnauthorizedResponse,
+  User,
+} from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
-import type { ErrorType } from "../custom-fetch";
+import type { ErrorType, BodyType } from "../custom-fetch";
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
@@ -92,6 +115,1066 @@ export function useHealthCheck<
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getHealthCheckQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Register a new user
+ */
+export const getAuthRegisterUrl = () => {
+  return `/api/auth/register`;
+};
+
+export const authRegister = async (
+  registerRequest: RegisterRequest,
+  options?: RequestInit,
+): Promise<AuthResponse> => {
+  return customFetch<AuthResponse>(getAuthRegisterUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(registerRequest),
+  });
+};
+
+export const getAuthRegisterMutationOptions = <
+  TError = ErrorType<BadRequestResponse | ConflictResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof authRegister>>,
+    TError,
+    { data: BodyType<RegisterRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof authRegister>>,
+  TError,
+  { data: BodyType<RegisterRequest> },
+  TContext
+> => {
+  const mutationKey = ["authRegister"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof authRegister>>,
+    { data: BodyType<RegisterRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return authRegister(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AuthRegisterMutationResult = NonNullable<
+  Awaited<ReturnType<typeof authRegister>>
+>;
+export type AuthRegisterMutationBody = BodyType<RegisterRequest>;
+export type AuthRegisterMutationError = ErrorType<
+  BadRequestResponse | ConflictResponse
+>;
+
+/**
+ * @summary Register a new user
+ */
+export const useAuthRegister = <
+  TError = ErrorType<BadRequestResponse | ConflictResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof authRegister>>,
+    TError,
+    { data: BodyType<RegisterRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof authRegister>>,
+  TError,
+  { data: BodyType<RegisterRequest> },
+  TContext
+> => {
+  return useMutation(getAuthRegisterMutationOptions(options));
+};
+
+/**
+ * @summary Login with email/password
+ */
+export const getAuthLoginUrl = () => {
+  return `/api/auth/login`;
+};
+
+export const authLogin = async (
+  loginRequest: LoginRequest,
+  options?: RequestInit,
+): Promise<AuthResponse> => {
+  return customFetch<AuthResponse>(getAuthLoginUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(loginRequest),
+  });
+};
+
+export const getAuthLoginMutationOptions = <
+  TError = ErrorType<BadRequestResponse | UnauthorizedResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof authLogin>>,
+    TError,
+    { data: BodyType<LoginRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof authLogin>>,
+  TError,
+  { data: BodyType<LoginRequest> },
+  TContext
+> => {
+  const mutationKey = ["authLogin"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof authLogin>>,
+    { data: BodyType<LoginRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return authLogin(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AuthLoginMutationResult = NonNullable<
+  Awaited<ReturnType<typeof authLogin>>
+>;
+export type AuthLoginMutationBody = BodyType<LoginRequest>;
+export type AuthLoginMutationError = ErrorType<
+  BadRequestResponse | UnauthorizedResponse
+>;
+
+/**
+ * @summary Login with email/password
+ */
+export const useAuthLogin = <
+  TError = ErrorType<BadRequestResponse | UnauthorizedResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof authLogin>>,
+    TError,
+    { data: BodyType<LoginRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof authLogin>>,
+  TError,
+  { data: BodyType<LoginRequest> },
+  TContext
+> => {
+  return useMutation(getAuthLoginMutationOptions(options));
+};
+
+/**
+ * @summary Get current authenticated user
+ */
+export const getAuthMeUrl = () => {
+  return `/api/auth/me`;
+};
+
+export const authMe = async (options?: RequestInit): Promise<User> => {
+  return customFetch<User>(getAuthMeUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getAuthMeQueryKey = () => {
+  return [`/api/auth/me`] as const;
+};
+
+export const getAuthMeQueryOptions = <
+  TData = Awaited<ReturnType<typeof authMe>>,
+  TError = ErrorType<UnauthorizedResponse>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof authMe>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAuthMeQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof authMe>>> = ({
+    signal,
+  }) => authMe({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof authMe>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type AuthMeQueryResult = NonNullable<Awaited<ReturnType<typeof authMe>>>;
+export type AuthMeQueryError = ErrorType<UnauthorizedResponse>;
+
+/**
+ * @summary Get current authenticated user
+ */
+
+export function useAuthMe<
+  TData = Awaited<ReturnType<typeof authMe>>,
+  TError = ErrorType<UnauthorizedResponse>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof authMe>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getAuthMeQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a pickup request (household)
+ */
+export const getCreatePickupUrl = () => {
+  return `/api/pickups`;
+};
+
+export const createPickup = async (
+  createPickupRequest: CreatePickupRequest,
+  options?: RequestInit,
+): Promise<Pickup> => {
+  return customFetch<Pickup>(getCreatePickupUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createPickupRequest),
+  });
+};
+
+export const getCreatePickupMutationOptions = <
+  TError = ErrorType<BadRequestResponse | UnauthorizedResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createPickup>>,
+    TError,
+    { data: BodyType<CreatePickupRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createPickup>>,
+  TError,
+  { data: BodyType<CreatePickupRequest> },
+  TContext
+> => {
+  const mutationKey = ["createPickup"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createPickup>>,
+    { data: BodyType<CreatePickupRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createPickup(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreatePickupMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createPickup>>
+>;
+export type CreatePickupMutationBody = BodyType<CreatePickupRequest>;
+export type CreatePickupMutationError = ErrorType<
+  BadRequestResponse | UnauthorizedResponse
+>;
+
+/**
+ * @summary Create a pickup request (household)
+ */
+export const useCreatePickup = <
+  TError = ErrorType<BadRequestResponse | UnauthorizedResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createPickup>>,
+    TError,
+    { data: BodyType<CreatePickupRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createPickup>>,
+  TError,
+  { data: BodyType<CreatePickupRequest> },
+  TContext
+> => {
+  return useMutation(getCreatePickupMutationOptions(options));
+};
+
+/**
+ * @summary List pickup history for current household user
+ */
+export const getListMyPickupsUrl = () => {
+  return `/api/pickups/mine`;
+};
+
+export const listMyPickups = async (
+  options?: RequestInit,
+): Promise<Pickup[]> => {
+  return customFetch<Pickup[]>(getListMyPickupsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListMyPickupsQueryKey = () => {
+  return [`/api/pickups/mine`] as const;
+};
+
+export const getListMyPickupsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listMyPickups>>,
+  TError = ErrorType<UnauthorizedResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listMyPickups>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListMyPickupsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listMyPickups>>> = ({
+    signal,
+  }) => listMyPickups({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listMyPickups>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListMyPickupsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listMyPickups>>
+>;
+export type ListMyPickupsQueryError = ErrorType<UnauthorizedResponse>;
+
+/**
+ * @summary List pickup history for current household user
+ */
+
+export function useListMyPickups<
+  TData = Awaited<ReturnType<typeof listMyPickups>>,
+  TError = ErrorType<UnauthorizedResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listMyPickups>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListMyPickupsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get pickup details
+ */
+export const getGetPickupByIdUrl = (id: number) => {
+  return `/api/pickups/${id}`;
+};
+
+export const getPickupById = async (
+  id: number,
+  options?: RequestInit,
+): Promise<PickupDetails> => {
+  return customFetch<PickupDetails>(getGetPickupByIdUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetPickupByIdQueryKey = (id: number) => {
+  return [`/api/pickups/${id}`] as const;
+};
+
+export const getGetPickupByIdQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPickupById>>,
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getPickupById>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetPickupByIdQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getPickupById>>> = ({
+    signal,
+  }) => getPickupById(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getPickupById>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetPickupByIdQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getPickupById>>
+>;
+export type GetPickupByIdQueryError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary Get pickup details
+ */
+
+export function useGetPickupById<
+  TData = Awaited<ReturnType<typeof getPickupById>>,
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getPickupById>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetPickupByIdQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary List nearby pending pickup requests for collectors
+ */
+export const getListNearbyJobsUrl = (params: ListNearbyJobsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/jobs/nearby?${stringifiedParams}`
+    : `/api/jobs/nearby`;
+};
+
+export const listNearbyJobs = async (
+  params: ListNearbyJobsParams,
+  options?: RequestInit,
+): Promise<Job[]> => {
+  return customFetch<Job[]>(getListNearbyJobsUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListNearbyJobsQueryKey = (params?: ListNearbyJobsParams) => {
+  return [`/api/jobs/nearby`, ...(params ? [params] : [])] as const;
+};
+
+export const getListNearbyJobsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listNearbyJobs>>,
+  TError = ErrorType<UnauthorizedResponse>,
+>(
+  params: ListNearbyJobsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listNearbyJobs>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListNearbyJobsQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listNearbyJobs>>> = ({
+    signal,
+  }) => listNearbyJobs(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listNearbyJobs>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListNearbyJobsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listNearbyJobs>>
+>;
+export type ListNearbyJobsQueryError = ErrorType<UnauthorizedResponse>;
+
+/**
+ * @summary List nearby pending pickup requests for collectors
+ */
+
+export function useListNearbyJobs<
+  TData = Awaited<ReturnType<typeof listNearbyJobs>>,
+  TError = ErrorType<UnauthorizedResponse>,
+>(
+  params: ListNearbyJobsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listNearbyJobs>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListNearbyJobsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Accept a pickup request (collector)
+ */
+export const getAcceptPickupUrl = (id: number) => {
+  return `/api/pickups/${id}/accept`;
+};
+
+export const acceptPickup = async (
+  id: number,
+  options?: RequestInit,
+): Promise<Pickup> => {
+  return customFetch<Pickup>(getAcceptPickupUrl(id), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getAcceptPickupMutationOptions = <
+  TError = ErrorType<
+    UnauthorizedResponse | NotFoundResponse | ConflictResponse
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof acceptPickup>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof acceptPickup>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["acceptPickup"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof acceptPickup>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return acceptPickup(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AcceptPickupMutationResult = NonNullable<
+  Awaited<ReturnType<typeof acceptPickup>>
+>;
+
+export type AcceptPickupMutationError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse | ConflictResponse
+>;
+
+/**
+ * @summary Accept a pickup request (collector)
+ */
+export const useAcceptPickup = <
+  TError = ErrorType<
+    UnauthorizedResponse | NotFoundResponse | ConflictResponse
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof acceptPickup>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof acceptPickup>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getAcceptPickupMutationOptions(options));
+};
+
+/**
+ * @summary Enter collected weight for a pickup (collector)
+ */
+export const getEnterPickupWeightUrl = (id: number) => {
+  return `/api/pickups/${id}/weight`;
+};
+
+export const enterPickupWeight = async (
+  id: number,
+  enterWeightRequest: EnterWeightRequest,
+  options?: RequestInit,
+): Promise<Pickup> => {
+  return customFetch<Pickup>(getEnterPickupWeightUrl(id), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(enterWeightRequest),
+  });
+};
+
+export const getEnterPickupWeightMutationOptions = <
+  TError = ErrorType<
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | ForbiddenResponse
+    | NotFoundResponse
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof enterPickupWeight>>,
+    TError,
+    { id: number; data: BodyType<EnterWeightRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof enterPickupWeight>>,
+  TError,
+  { id: number; data: BodyType<EnterWeightRequest> },
+  TContext
+> => {
+  const mutationKey = ["enterPickupWeight"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof enterPickupWeight>>,
+    { id: number; data: BodyType<EnterWeightRequest> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return enterPickupWeight(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type EnterPickupWeightMutationResult = NonNullable<
+  Awaited<ReturnType<typeof enterPickupWeight>>
+>;
+export type EnterPickupWeightMutationBody = BodyType<EnterWeightRequest>;
+export type EnterPickupWeightMutationError = ErrorType<
+  | BadRequestResponse
+  | UnauthorizedResponse
+  | ForbiddenResponse
+  | NotFoundResponse
+>;
+
+/**
+ * @summary Enter collected weight for a pickup (collector)
+ */
+export const useEnterPickupWeight = <
+  TError = ErrorType<
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | ForbiddenResponse
+    | NotFoundResponse
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof enterPickupWeight>>,
+    TError,
+    { id: number; data: BodyType<EnterWeightRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof enterPickupWeight>>,
+  TError,
+  { id: number; data: BodyType<EnterWeightRequest> },
+  TContext
+> => {
+  return useMutation(getEnterPickupWeightMutationOptions(options));
+};
+
+/**
+ * @summary Complete a pickup and generate receipt (collector)
+ */
+export const getCompletePickupUrl = (id: number) => {
+  return `/api/pickups/${id}/complete`;
+};
+
+export const completePickup = async (
+  id: number,
+  options?: RequestInit,
+): Promise<PickupDetails> => {
+  return customFetch<PickupDetails>(getCompletePickupUrl(id), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getCompletePickupMutationOptions = <
+  TError = ErrorType<
+    | UnauthorizedResponse
+    | ForbiddenResponse
+    | NotFoundResponse
+    | ConflictResponse
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof completePickup>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof completePickup>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["completePickup"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof completePickup>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return completePickup(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CompletePickupMutationResult = NonNullable<
+  Awaited<ReturnType<typeof completePickup>>
+>;
+
+export type CompletePickupMutationError = ErrorType<
+  UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse
+>;
+
+/**
+ * @summary Complete a pickup and generate receipt (collector)
+ */
+export const useCompletePickup = <
+  TError = ErrorType<
+    | UnauthorizedResponse
+    | ForbiddenResponse
+    | NotFoundResponse
+    | ConflictResponse
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof completePickup>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof completePickup>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getCompletePickupMutationOptions(options));
+};
+
+/**
+ * @summary Get collector earnings summary
+ */
+export const getGetMyEarningsUrl = (params: GetMyEarningsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/collectors/me/earnings?${stringifiedParams}`
+    : `/api/collectors/me/earnings`;
+};
+
+export const getMyEarnings = async (
+  params: GetMyEarningsParams,
+  options?: RequestInit,
+): Promise<EarningsSummary> => {
+  return customFetch<EarningsSummary>(getGetMyEarningsUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetMyEarningsQueryKey = (params?: GetMyEarningsParams) => {
+  return [`/api/collectors/me/earnings`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetMyEarningsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMyEarnings>>,
+  TError = ErrorType<UnauthorizedResponse | ForbiddenResponse>,
+>(
+  params: GetMyEarningsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getMyEarnings>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetMyEarningsQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getMyEarnings>>> = ({
+    signal,
+  }) => getMyEarnings(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getMyEarnings>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetMyEarningsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getMyEarnings>>
+>;
+export type GetMyEarningsQueryError = ErrorType<
+  UnauthorizedResponse | ForbiddenResponse
+>;
+
+/**
+ * @summary Get collector earnings summary
+ */
+
+export function useGetMyEarnings<
+  TData = Awaited<ReturnType<typeof getMyEarnings>>,
+  TError = ErrorType<UnauthorizedResponse | ForbiddenResponse>,
+>(
+  params: GetMyEarningsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getMyEarnings>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetMyEarningsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get receipt by pickup id
+ */
+export const getGetReceiptByPickupIdUrl = (pickupId: number) => {
+  return `/api/receipts/${pickupId}`;
+};
+
+export const getReceiptByPickupId = async (
+  pickupId: number,
+  options?: RequestInit,
+): Promise<Receipt> => {
+  return customFetch<Receipt>(getGetReceiptByPickupIdUrl(pickupId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetReceiptByPickupIdQueryKey = (pickupId: number) => {
+  return [`/api/receipts/${pickupId}`] as const;
+};
+
+export const getGetReceiptByPickupIdQueryOptions = <
+  TData = Awaited<ReturnType<typeof getReceiptByPickupId>>,
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+>(
+  pickupId: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getReceiptByPickupId>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetReceiptByPickupIdQueryKey(pickupId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getReceiptByPickupId>>
+  > = ({ signal }) =>
+    getReceiptByPickupId(pickupId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!pickupId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getReceiptByPickupId>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetReceiptByPickupIdQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getReceiptByPickupId>>
+>;
+export type GetReceiptByPickupIdQueryError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary Get receipt by pickup id
+ */
+
+export function useGetReceiptByPickupId<
+  TData = Awaited<ReturnType<typeof getReceiptByPickupId>>,
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+>(
+  pickupId: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getReceiptByPickupId>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetReceiptByPickupIdQueryOptions(pickupId, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

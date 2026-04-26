@@ -14,3 +14,316 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * @summary Register a new user
+ */
+
+export const authRegisterBodyPasswordMin = 6;
+
+export const AuthRegisterBody = zod.object({
+  name: zod.string().min(1),
+  email: zod.string().email(),
+  password: zod.string().min(authRegisterBodyPasswordMin),
+  role: zod.enum(["household", "collector", "admin"]),
+});
+
+/**
+ * @summary Login with email/password
+ */
+
+export const AuthLoginBody = zod.object({
+  email: zod.string().email(),
+  password: zod.string().min(1),
+});
+
+export const AuthLoginResponse = zod.object({
+  token: zod.string().describe("JWT bearer token"),
+  user: zod.object({
+    id: zod.number(),
+    name: zod.string(),
+    email: zod.string().email(),
+    role: zod.enum(["household", "collector", "admin"]),
+    status: zod.enum(["active", "pending_verification", "suspended"]),
+    createdAt: zod.coerce.date(),
+  }),
+});
+
+/**
+ * @summary Get current authenticated user
+ */
+export const AuthMeResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  email: zod.string().email(),
+  role: zod.enum(["household", "collector", "admin"]),
+  status: zod.enum(["active", "pending_verification", "suspended"]),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Create a pickup request (household)
+ */
+
+export const createPickupBodyEstimatedWeightKgMin = 0;
+
+export const CreatePickupBody = zod.object({
+  wasteType: zod.string().min(1),
+  estimatedWeightKg: zod
+    .number()
+    .min(createPickupBodyEstimatedWeightKgMin)
+    .nullish(),
+  location: zod.object({
+    lat: zod.number(),
+    lng: zod.number(),
+    addressLabel: zod.string().nullish(),
+    area: zod.string().nullish(),
+    city: zod.string().nullish(),
+  }),
+});
+
+/**
+ * @summary List pickup history for current household user
+ */
+export const ListMyPickupsResponseItem = zod.object({
+  id: zod.number(),
+  householdUserId: zod.number(),
+  wasteType: zod.string(),
+  estimatedWeightKg: zod.number().nullish(),
+  status: zod.enum([
+    "pending",
+    "accepted",
+    "in_progress",
+    "completed",
+    "cancelled",
+  ]),
+  createdAt: zod.coerce.date(),
+  acceptedAt: zod.coerce.date().nullish(),
+  completedAt: zod.coerce.date().nullish(),
+  assignedCollectorUserId: zod.number().nullish(),
+});
+export const ListMyPickupsResponse = zod.array(ListMyPickupsResponseItem);
+
+/**
+ * @summary Get pickup details
+ */
+export const GetPickupByIdParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetPickupByIdResponse = zod.object({
+  pickup: zod.object({
+    id: zod.number(),
+    householdUserId: zod.number(),
+    wasteType: zod.string(),
+    estimatedWeightKg: zod.number().nullish(),
+    status: zod.enum([
+      "pending",
+      "accepted",
+      "in_progress",
+      "completed",
+      "cancelled",
+    ]),
+    createdAt: zod.coerce.date(),
+    acceptedAt: zod.coerce.date().nullish(),
+    completedAt: zod.coerce.date().nullish(),
+    assignedCollectorUserId: zod.number().nullish(),
+  }),
+  location: zod
+    .object({
+      lat: zod.number(),
+      lng: zod.number(),
+      addressLabel: zod.string().nullish(),
+      area: zod.string().nullish(),
+      city: zod.string().nullish(),
+    })
+    .nullish()
+    .describe(
+      "Location may be null after completion\/cancellation due to privacy policy.",
+    ),
+  receipt: zod
+    .object({
+      id: zod.number(),
+      pickupRequestId: zod.number(),
+      finalWeightKg: zod.number(),
+      pointsAwarded: zod.number(),
+      issuedAt: zod.coerce.date(),
+    })
+    .nullish(),
+});
+
+/**
+ * @summary List nearby pending pickup requests for collectors
+ */
+export const listNearbyJobsQueryRadiusKmMin = 0.1;
+
+export const ListNearbyJobsQueryParams = zod.object({
+  lat: zod.coerce.number(),
+  lng: zod.coerce.number(),
+  radiusKm: zod.coerce.number().min(listNearbyJobsQueryRadiusKmMin),
+});
+
+export const ListNearbyJobsResponseItem = zod.object({
+  pickup: zod.object({
+    id: zod.number(),
+    householdUserId: zod.number(),
+    wasteType: zod.string(),
+    estimatedWeightKg: zod.number().nullish(),
+    status: zod.enum([
+      "pending",
+      "accepted",
+      "in_progress",
+      "completed",
+      "cancelled",
+    ]),
+    createdAt: zod.coerce.date(),
+    acceptedAt: zod.coerce.date().nullish(),
+    completedAt: zod.coerce.date().nullish(),
+    assignedCollectorUserId: zod.number().nullish(),
+  }),
+  location: zod.object({
+    lat: zod.number(),
+    lng: zod.number(),
+    addressLabel: zod.string().nullish(),
+    area: zod.string().nullish(),
+    city: zod.string().nullish(),
+  }),
+  distanceKm: zod.number().nullish(),
+});
+export const ListNearbyJobsResponse = zod.array(ListNearbyJobsResponseItem);
+
+/**
+ * @summary Accept a pickup request (collector)
+ */
+export const AcceptPickupParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const AcceptPickupResponse = zod.object({
+  id: zod.number(),
+  householdUserId: zod.number(),
+  wasteType: zod.string(),
+  estimatedWeightKg: zod.number().nullish(),
+  status: zod.enum([
+    "pending",
+    "accepted",
+    "in_progress",
+    "completed",
+    "cancelled",
+  ]),
+  createdAt: zod.coerce.date(),
+  acceptedAt: zod.coerce.date().nullish(),
+  completedAt: zod.coerce.date().nullish(),
+  assignedCollectorUserId: zod.number().nullish(),
+});
+
+/**
+ * @summary Enter collected weight for a pickup (collector)
+ */
+export const EnterPickupWeightParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const enterPickupWeightBodyFinalWeightKgMin = 0;
+
+export const EnterPickupWeightBody = zod.object({
+  finalWeightKg: zod.number().min(enterPickupWeightBodyFinalWeightKgMin),
+});
+
+export const EnterPickupWeightResponse = zod.object({
+  id: zod.number(),
+  householdUserId: zod.number(),
+  wasteType: zod.string(),
+  estimatedWeightKg: zod.number().nullish(),
+  status: zod.enum([
+    "pending",
+    "accepted",
+    "in_progress",
+    "completed",
+    "cancelled",
+  ]),
+  createdAt: zod.coerce.date(),
+  acceptedAt: zod.coerce.date().nullish(),
+  completedAt: zod.coerce.date().nullish(),
+  assignedCollectorUserId: zod.number().nullish(),
+});
+
+/**
+ * @summary Complete a pickup and generate receipt (collector)
+ */
+export const CompletePickupParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const CompletePickupResponse = zod.object({
+  pickup: zod.object({
+    id: zod.number(),
+    householdUserId: zod.number(),
+    wasteType: zod.string(),
+    estimatedWeightKg: zod.number().nullish(),
+    status: zod.enum([
+      "pending",
+      "accepted",
+      "in_progress",
+      "completed",
+      "cancelled",
+    ]),
+    createdAt: zod.coerce.date(),
+    acceptedAt: zod.coerce.date().nullish(),
+    completedAt: zod.coerce.date().nullish(),
+    assignedCollectorUserId: zod.number().nullish(),
+  }),
+  location: zod
+    .object({
+      lat: zod.number(),
+      lng: zod.number(),
+      addressLabel: zod.string().nullish(),
+      area: zod.string().nullish(),
+      city: zod.string().nullish(),
+    })
+    .nullish()
+    .describe(
+      "Location may be null after completion\/cancellation due to privacy policy.",
+    ),
+  receipt: zod
+    .object({
+      id: zod.number(),
+      pickupRequestId: zod.number(),
+      finalWeightKg: zod.number(),
+      pointsAwarded: zod.number(),
+      issuedAt: zod.coerce.date(),
+    })
+    .nullish(),
+});
+
+/**
+ * @summary Get collector earnings summary
+ */
+export const GetMyEarningsQueryParams = zod.object({
+  range: zod.enum(["daily", "weekly"]),
+});
+
+export const GetMyEarningsResponse = zod.object({
+  range: zod.enum(["daily", "weekly"]),
+  pointsTotal: zod
+    .number()
+    .describe("Total points earned in the selected range"),
+  pickupsCompleted: zod.number(),
+  from: zod.coerce.date(),
+  to: zod.coerce.date(),
+});
+
+/**
+ * @summary Get receipt by pickup id
+ */
+export const GetReceiptByPickupIdParams = zod.object({
+  pickupId: zod.coerce.number(),
+});
+
+export const GetReceiptByPickupIdResponse = zod.object({
+  id: zod.number(),
+  pickupRequestId: zod.number(),
+  finalWeightKg: zod.number(),
+  pointsAwarded: zod.number(),
+  issuedAt: zod.coerce.date(),
+});

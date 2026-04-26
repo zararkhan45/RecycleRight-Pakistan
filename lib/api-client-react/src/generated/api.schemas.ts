@@ -8,3 +8,174 @@
 export interface HealthStatus {
   status: string;
 }
+
+export interface ApiError {
+  error: string;
+  message: string;
+  /** Optional structured details (e.g. validation issues) */
+  details?: unknown;
+}
+
+export type UserRole = (typeof UserRole)[keyof typeof UserRole];
+
+export const UserRole = {
+  household: "household",
+  collector: "collector",
+  admin: "admin",
+} as const;
+
+export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus];
+
+export const UserStatus = {
+  active: "active",
+  pending_verification: "pending_verification",
+  suspended: "suspended",
+} as const;
+
+export type PickupStatus = (typeof PickupStatus)[keyof typeof PickupStatus];
+
+export const PickupStatus = {
+  pending: "pending",
+  accepted: "accepted",
+  in_progress: "in_progress",
+  completed: "completed",
+  cancelled: "cancelled",
+} as const;
+
+export type EarningsRange = (typeof EarningsRange)[keyof typeof EarningsRange];
+
+export const EarningsRange = {
+  daily: "daily",
+  weekly: "weekly",
+} as const;
+
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: UserRole;
+  status: UserStatus;
+  createdAt: string;
+}
+
+export interface RegisterRequest {
+  /** @minLength 1 */
+  name: string;
+  email: string;
+  /** @minLength 6 */
+  password: string;
+  role: UserRole;
+}
+
+export interface LoginRequest {
+  email: string;
+  /** @minLength 1 */
+  password: string;
+}
+
+export interface AuthResponse {
+  /** JWT bearer token */
+  token: string;
+  user: User;
+}
+
+export interface PickupLocation {
+  lat: number;
+  lng: number;
+  addressLabel?: string | null;
+  area?: string | null;
+  city?: string | null;
+}
+
+export interface CreatePickupRequest {
+  /** @minLength 1 */
+  wasteType: string;
+  /** @minimum 0 */
+  estimatedWeightKg?: number | null;
+  location: PickupLocation;
+}
+
+export interface Pickup {
+  id: number;
+  householdUserId: number;
+  wasteType: string;
+  estimatedWeightKg?: number | null;
+  status: PickupStatus;
+  createdAt: string;
+  acceptedAt?: string | null;
+  completedAt?: string | null;
+  assignedCollectorUserId?: number | null;
+}
+
+export interface Job {
+  pickup: Pickup;
+  location: PickupLocation;
+  distanceKm?: number | null;
+}
+
+export interface EnterWeightRequest {
+  /** @minimum 0 */
+  finalWeightKg: number;
+}
+
+export interface Receipt {
+  id: number;
+  pickupRequestId: number;
+  finalWeightKg: number;
+  pointsAwarded: number;
+  issuedAt: string;
+}
+
+export interface PickupDetails {
+  pickup: Pickup;
+  /** Location may be null after completion/cancellation due to privacy policy. */
+  location?: PickupLocation | null;
+  receipt?: Receipt | null;
+}
+
+export interface EarningsSummary {
+  range: EarningsRange;
+  /** Total points earned in the selected range */
+  pointsTotal: number;
+  pickupsCompleted: number;
+  from: string;
+  to: string;
+}
+
+/**
+ * Bad request
+ */
+export type BadRequestResponse = ApiError;
+
+/**
+ * Unauthorized
+ */
+export type UnauthorizedResponse = ApiError;
+
+/**
+ * Forbidden
+ */
+export type ForbiddenResponse = ApiError;
+
+/**
+ * Not found
+ */
+export type NotFoundResponse = ApiError;
+
+/**
+ * Conflict
+ */
+export type ConflictResponse = ApiError;
+
+export type ListNearbyJobsParams = {
+  lat: number;
+  lng: number;
+  /**
+   * @minimum 0.1
+   */
+  radiusKm: number;
+};
+
+export type GetMyEarningsParams = {
+  range: EarningsRange;
+};

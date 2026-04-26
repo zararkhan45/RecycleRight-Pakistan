@@ -63,8 +63,8 @@ pnpm --filter @workspace/collector run dev             # Expo dev server, scan Q
 ```
 
 Notes:
-- Locally the Collector app does NOT need `PORT=19397` — that's only required by the Replit Expo proxy. Plain `pnpm ... run dev` is fine; Expo will pick its own port.
-- Phone and computer must be on the same Wi‑Fi. If they're on different networks, run Expo with `--tunnel`.
+- The Collector `dev` script auto-detects Replit vs. local. Locally it omits the Replit-only env vars and uses `${PORT:-8081}`, so plain `pnpm ... run dev` works.
+- Phone and computer must be on the same Wi‑Fi. If they're on different networks, use the tunnel script: `pnpm --filter @workspace/collector run dev:tunnel` (requires `@expo/ngrok`, already in devDependencies).
 - `pnpm-workspace.yaml` keeps native binaries for linux-x64, linux-arm64, darwin-x64, darwin-arm64, and win32-x64. Other platforms (FreeBSD, Android-host, etc.) are stripped.
 - The `preinstall` script in `package.json` blocks `npm` and `yarn` — only pnpm works.
 

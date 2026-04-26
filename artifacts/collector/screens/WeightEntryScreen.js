@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors, spacing, radius, typography } from '../theme';
 import { WASTE_TYPES } from '../data/mockData';
+import { useEnterPickupWeight } from '@workspace/api-client-react';
 
 function dominantWasteType(items = []) {
   if (!items.length) return null;
@@ -30,6 +31,7 @@ function totalEstimatedWeight(items = []) {
 export default function WeightEntryScreen({ navigation, route }) {
   const job = (route && route.params && route.params.job) || null;
   const collector = (route && route.params && route.params.collector) || null;
+  const enterWeight = useEnterPickupWeight();
 
   const initialDominant = job ? dominantWasteType(job.items) : null;
   const initialEstimated = job ? totalEstimatedWeight(job.items) : 0;
@@ -49,14 +51,23 @@ export default function WeightEntryScreen({ navigation, route }) {
     if (!navigation) return;
     const parsed = parseFloat(weight);
     if (Number.isNaN(parsed) || parsed <= 0) return;
-    if (typeof navigation.navigate === 'function') {
-      navigation.navigate('PickupConfirmationScreen', {
-        weight: parsed,
-        wasteType: selectedWaste,
-        job,
-        collector,
+    if (!job || !job.pickupId) return;
+    enterWeight
+      .mutateAsync({ id: job.pickupId, data: { finalWeightKg: parsed } })
+      .then(() => {
+        if (typeof navigation.navigate === 'function') {
+          navigation.navigate('PickupConfirmationScreen', {
+            weight: parsed,
+            wasteType: selectedWaste,
+            job,
+            collector,
+            pickupId: job.pickupId,
+          });
+        }
+      })
+      .catch(() => {
+        // keep user on screen; UI can be improved later
       });
-    }
   };
 
   const handleWeightChange = (txt) => {

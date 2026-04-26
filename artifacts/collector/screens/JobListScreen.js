@@ -9,7 +9,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors, spacing, radius, typography } from '../theme';
-import { pickupJobs, JOB_STATUSES } from '../data/mockData';
+import { useListNearbyJobs } from '@workspace/api-client-react';
+import { backendJobToUi, JOB_STATUSES } from '../lib/jobAdapter';
 import JobCard from '../components/JobCard';
 
 const FILTERS = [
@@ -21,6 +22,12 @@ const FILTERS = [
 
 export default function JobListScreen({ navigation }) {
   const [activeFilter, setActiveFilter] = useState('all');
+  const jobsQuery = useListNearbyJobs({ lat: 33.6844, lng: 73.0479, radiusKm: 5 });
+
+  const pickupJobs = useMemo(() => {
+    const raw = jobsQuery.data || [];
+    return raw.map(backendJobToUi);
+  }, [jobsQuery.data]);
 
   const filteredJobs = useMemo(() => {
     if (activeFilter === 'all') {
@@ -109,9 +116,13 @@ export default function JobListScreen({ navigation }) {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View style={styles.emptyWrap}>
-            <Text style={styles.emptyTitle}>No jobs here yet</Text>
+            <Text style={styles.emptyTitle}>
+              {jobsQuery.isLoading ? 'Loading jobs…' : 'No jobs here yet'}
+            </Text>
             <Text style={styles.emptySub}>
-              New requests will show up the moment a household nearby books a pickup.
+              {jobsQuery.isLoading
+                ? 'Fetching nearby pickup requests from the server.'
+                : 'New requests will show up the moment a household nearby books a pickup.'}
             </Text>
           </View>
         }

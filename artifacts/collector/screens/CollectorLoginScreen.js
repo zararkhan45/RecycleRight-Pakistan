@@ -14,21 +14,23 @@ import {
 } from 'react-native';
 
 import { colors, spacing, radius, typography, shadows } from '../theme';
-import { collectorProfile } from '../data/mockData';
+import { useAuthLogin } from '@workspace/api-client-react';
+import { setAuthToken, setAuthUser } from '../lib/authStorage';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const TOP_PANEL_HEIGHT = SCREEN_HEIGHT * 0.35;
 
 export default function CollectorLoginScreen({ navigation }) {
-  const [email, setEmail] = useState('bilal.ahmed@recycleright.pk');
-  const [password, setPassword] = useState('••••••••');
+  const [email, setEmail] = useState('collector1@example.com');
+  const [password, setPassword] = useState('password123');
   const [showPassword, setShowPassword] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
+  const login = useAuthLogin();
+  const submitting = login.isPending;
   const canSubmit = email.trim().length > 0 && password.length > 0 && !submitting;
 
-  const handleSignIn = () => {
+  const handleSignIn = async () => {
     setError('');
 
     if (!email.trim() || !password) {
@@ -36,16 +38,30 @@ export default function CollectorLoginScreen({ navigation }) {
       return;
     }
 
-    setSubmitting(true);
+    try {
+      const result = await login.mutateAsync({
+        data: { email: email.trim(), password },
+      });
 
-    setTimeout(() => {
-      setSubmitting(false);
-      if (navigation && typeof navigation.navigate === 'function') {
-        navigation.navigate('HotspotMapScreen', {
-          collector: collectorProfile,
+      await setAuthToken(result.token);
+      await setAuthUser({
+        id: result.user.id,
+        name: result.user.name,
+        email: result.user.email,
+        role: result.user.role,
+      });
+
+      if (navigation && typeof navigation.reset === 'function') {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Main', params: { collector: result.user } }],
         });
+      } else if (navigation && typeof navigation.navigate === 'function') {
+        navigation.navigate('HotspotMapScreen', { collector: result.user });
       }
-    }, 450);
+    } catch (e) {
+      setError('Login failed. Please check your email/password and API base URL.');
+    }
   };
 
   return (

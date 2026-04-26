@@ -6,6 +6,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { colors, spacing, radius, typography } from '../theme';
 import { collectorProfile } from '../data/mockData';
+import { clearSession } from '../lib/authStorage';
 
 import CollectorLoginScreen from '../screens/CollectorLoginScreen';
 import HotspotMapScreen from '../screens/HotspotMapScreen';
@@ -71,6 +72,7 @@ function ProfileScreen({ navigation, collector }) {
           style={profileStyles.logoutBtn}
           activeOpacity={0.85}
           onPress={() => {
+            clearSession().catch(() => {});
             if (navigation && typeof navigation.reset === 'function') {
               navigation.reset({
                 index: 0,

@@ -18,6 +18,7 @@ import {
   collectorProfile,
 } from '../data/mockData';
 import StatusBadge from '../components/StatusBadge';
+import { useAcceptPickup } from '@workspace/api-client-react';
 
 function timeAgo(iso) {
   if (!iso) return '—';
@@ -53,6 +54,7 @@ export default function JobDetailScreen({ navigation, route }) {
 
   const [job, setJob] = useState(initialJob);
   const [toastMessage, setToastMessage] = useState('');
+  const acceptMutation = useAcceptPickup();
 
   const toastOpacity = useRef(new Animated.Value(0)).current;
   const toastTranslate = useRef(new Animated.Value(-20)).current;
@@ -123,21 +125,29 @@ export default function JobDetailScreen({ navigation, route }) {
   const isCancelled = job.status === JOB_STATUSES.CANCELLED;
 
   const handleAccept = () => {
-    setJob((prev) =>
-      prev
-        ? {
-            ...prev,
-            status: JOB_STATUSES.ACCEPTED,
-            acceptedAt: new Date().toISOString(),
+    if (!job) return;
+    acceptMutation
+      .mutateAsync({ id: job.pickupId })
+      .then(() => {
+        setJob((prev) =>
+          prev
+            ? {
+                ...prev,
+                status: JOB_STATUSES.ACCEPTED,
+                acceptedAt: new Date().toISOString(),
+              }
+            : prev,
+        );
+        setToastMessage('Job accepted! Navigate to household.');
+        setTimeout(() => {
+          if (navigation && typeof navigation.navigate === 'function') {
+            navigation.navigate('NavigationScreen', { job, collector });
           }
-        : prev,
-    );
-    setToastMessage('Job accepted! Navigate to household.');
-    setTimeout(() => {
-      if (navigation && typeof navigation.navigate === 'function') {
-        navigation.navigate('NavigationScreen', { job, collector });
-      }
-    }, 700);
+        }, 700);
+      })
+      .catch(() => {
+        setToastMessage('Failed to accept job.');
+      });
   };
 
   const handleCancelAcceptance = () => {

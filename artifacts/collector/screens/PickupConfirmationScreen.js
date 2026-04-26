@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors, spacing, radius, typography } from '../theme';
 import { WASTE_TYPES } from '../data/mockData';
+import { useCompletePickup } from '@workspace/api-client-react';
 
 const POINTS_PER_KG = {
   plastic: 10,
@@ -33,6 +34,10 @@ export default function PickupConfirmationScreen({ navigation, route }) {
   const weight = typeof params.weight === 'number' ? params.weight : 0;
   const wasteType = params.wasteType || 'plastic';
   const job = params.job || null;
+  const pickupId = params.pickupId || (job && job.pickupId) || null;
+
+  const completePickup = useCompletePickup();
+  const [receiptPoints, setReceiptPoints] = useState(null);
 
   const wasteMeta = WASTE_TYPES[wasteType];
   const wasteLabel = wasteMeta ? wasteMeta.label : wasteType;
@@ -41,9 +46,10 @@ export default function PickupConfirmationScreen({ navigation, route }) {
     : '—';
 
   const pointsAwarded = useMemo(() => {
+    if (typeof receiptPoints === 'number') return receiptPoints;
     const rate = POINTS_PER_KG[wasteType] ?? 0;
     return Math.round(weight * rate);
-  }, [weight, wasteType]);
+  }, [receiptPoints, weight, wasteType]);
 
   const timeString = useMemo(() => formatTime(new Date()), []);
 
@@ -53,6 +59,16 @@ export default function PickupConfirmationScreen({ navigation, route }) {
   const contentTranslate = useRef(new Animated.Value(16)).current;
 
   useEffect(() => {
+    if (!pickupId) return;
+    completePickup
+      .mutateAsync({ id: pickupId })
+      .then((result) => {
+        if (result && result.receipt && typeof result.receipt.pointsAwarded === 'number') {
+          setReceiptPoints(result.receipt.pointsAwarded);
+        }
+      })
+      .catch(() => {});
+
     Animated.parallel([
       Animated.spring(checkScale, {
         toValue: 1,

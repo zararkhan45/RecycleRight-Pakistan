@@ -20,6 +20,7 @@ import {
 } from '../data/mockData';
 import EarningsSummaryCard from '../components/EarningsSummaryCard';
 import JobCard from '../components/JobCard';
+import { useGetMyEarnings } from '@workspace/api-client-react';
 
 const WEEK_ORDER = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const MAX_BAR_HEIGHT = 100;
@@ -41,20 +42,24 @@ function pickupEarnings(job) {
 }
 
 export default function EarningsDashboardScreen({ navigation }) {
+  const earningsQuery = useGetMyEarnings({ range: 'weekly' });
+
   const summaryCards = useMemo(() => {
     const weekKg = earningsHistory.reduce((s, d) => s + (d.totalKg || 0), 0);
     const weekPickups = earningsHistory.reduce(
       (s, d) => s + (d.pickups || 0),
       0,
     );
+    const pointsWeek = earningsQuery.data ? earningsQuery.data.pointsTotal : 0;
+    const completedWeek = earningsQuery.data ? earningsQuery.data.pickupsCompleted : 0;
     return [
       {
         id: 'week',
         label: 'This Week',
-        amount: collectorProfile.earnings.week,
-        currency: collectorProfile.earnings.currency,
+        amount: pointsWeek,
+        currency: 'pts',
         stats: [
-          { icon: '\u{1F4E6}', value: weekPickups, label: 'Pickups' },
+          { icon: '\u{1F4E6}', value: completedWeek || weekPickups, label: 'Pickups' },
           { icon: '\u2696\uFE0F', value: `${weekKg.toFixed(1)} kg`, label: 'Collected' },
           {
             icon: '\u2B50',
@@ -87,7 +92,7 @@ export default function EarningsDashboardScreen({ navigation }) {
         ],
       },
     ];
-  }, []);
+  }, [earningsQuery.data]);
 
   const orderedHistory = useMemo(() => {
     const byDay = new Map(earningsHistory.map((d) => [dayShort(d.day), d]));
@@ -163,7 +168,7 @@ export default function EarningsDashboardScreen({ navigation }) {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Weekly Breakdown</Text>
             <Text style={styles.sectionMeta}>
-              PKR {formatCurrency(collectorProfile.earnings.week)} total
+              {earningsQuery.data ? `${earningsQuery.data.pointsTotal} pts total` : '—'}
             </Text>
           </View>
 

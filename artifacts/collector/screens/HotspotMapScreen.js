@@ -13,12 +13,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, PROVIDER_GOOGLE } from '../components/Map';
 
 import { colors, spacing, radius, typography, shadows } from '../theme';
-import {
-  collectorProfile,
-  pickupJobs,
-  WASTE_TYPES,
-  JOB_STATUSES,
-} from '../data/mockData';
+import { useListNearbyJobs } from '@workspace/api-client-react';
+import { backendJobToUi, JOB_STATUSES } from '../lib/jobAdapter';
+import { WASTE_TYPES, collectorProfile } from '../data/mockData';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SHEET_HEIGHT = 280;
@@ -60,9 +57,14 @@ export default function HotspotMapScreen({ navigation, route }) {
   const sheetTranslate = useRef(new Animated.Value(SHEET_HEIGHT + 100)).current;
   const backdropOpacity = useRef(new Animated.Value(0)).current;
 
+  const jobsQuery = useListNearbyJobs({ lat: 33.6844, lng: 73.0479, radiusKm: 5 });
+
   const pendingJobs = useMemo(
-    () => pickupJobs.filter((j) => j.status === JOB_STATUSES.PENDING),
-    [],
+    () => {
+      const raw = jobsQuery.data || [];
+      return raw.map(backendJobToUi).filter((j) => j.status === JOB_STATUSES.PENDING);
+    },
+    [jobsQuery.data],
   );
 
   useEffect(() => {

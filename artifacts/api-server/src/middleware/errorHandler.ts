@@ -23,10 +23,11 @@ export function errorHandler(
   }
 
   if (err instanceof z.ZodError) {
+    const zerr = err as z.ZodError;
     const body: ApiErrorResponse = {
       error: "bad_request",
       message: "Validation error",
-      details: err.flatten(),
+      details: zerr.flatten(),
     };
     res.status(400).json(body);
     return;

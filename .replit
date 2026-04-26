@@ -44,13 +44,12 @@ outputType = "console"
 name = "Collector App"
 author = "agent"
 
+[workflows.workflow.metadata]
+outputType = "console"
+
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "PORT=3000 pnpm --filter @workspace/collector run dev"
-waitForPort = 3000
-
-[workflows.workflow.metadata]
-outputType = "webview"
+args = "PORT=19397 pnpm --filter @workspace/collector run dev"
 
 [[workflows.workflow]]
 name = "Mockup Sandbox"

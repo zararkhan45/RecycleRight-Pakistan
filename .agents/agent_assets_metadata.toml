@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "TxXFoqB6lkXZiVFsvVWd0"
+uri = "file://.local/tmp/expo-qr.png"
+type = "image"
+title = "Scan with Expo Go"

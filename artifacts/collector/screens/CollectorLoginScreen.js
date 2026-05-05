@@ -16,6 +16,7 @@ import {
 import { colors, spacing, radius, typography, shadows } from '../theme';
 import { useAuthLogin } from '@workspace/api-client-react';
 import { setAuthToken, setAuthUser } from '../lib/authStorage';
+import { registerPushTokenWithBackend } from '../lib/pushRegistration';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const TOP_PANEL_HEIGHT = SCREEN_HEIGHT * 0.35;
@@ -50,6 +51,8 @@ export default function CollectorLoginScreen({ navigation }) {
         email: result.user.email,
         role: result.user.role,
       });
+
+      void registerPushTokenWithBackend().catch(() => {});
 
       if (navigation && typeof navigation.reset === 'function') {
         navigation.reset({

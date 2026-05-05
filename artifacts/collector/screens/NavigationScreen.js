@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from '../components/Map';
 
 import { colors, spacing, radius, typography } from '../theme';
 import { WASTE_TYPES } from '../data/mockData';
+import { fetchDrivingRoute } from '../lib/integrations';
 
 const COLLECTOR_START = {
   latitude: 31.5497,
@@ -56,6 +57,9 @@ export default function NavigationScreen({ navigation, route }) {
   const pulseScale = useRef(new Animated.Value(1)).current;
   const pulseOpacity = useRef(new Animated.Value(0.6)).current;
   const liveDotOpacity = useRef(new Animated.Value(1)).current;
+  const [routeCoords, setRouteCoords] = useState([]);
+  const [serverDistanceKm, setServerDistanceKm] = useState(null);
+  const [serverEtaMin, setServerEtaMin] = useState(null);
 
   useEffect(() => {
     const pulseLoop = Animated.loop(
@@ -121,12 +125,46 @@ export default function NavigationScreen({ navigation, route }) {
     };
   }, [job]);
 
-  const distanceKm = useMemo(() => {
+  const fallbackDistanceKm = useMemo(() => {
     if (!destination) return 0;
     return haversineKm(COLLECTOR_START, destination);
   }, [destination]);
 
-  const etaMin = Math.max(1, Math.round((distanceKm / AVERAGE_SPEED_KMPH) * 60));
+  const distanceKm = typeof serverDistanceKm === 'number' ? serverDistanceKm : fallbackDistanceKm;
+  const etaMin =
+    typeof serverEtaMin === 'number'
+      ? serverEtaMin
+      : Math.max(1, Math.round((distanceKm / AVERAGE_SPEED_KMPH) * 60));
+
+  useEffect(() => {
+    let mounted = true;
+    if (!destination) {
+      setRouteCoords([]);
+      setServerDistanceKm(null);
+      setServerEtaMin(null);
+      return () => {
+        mounted = false;
+      };
+    }
+
+    fetchDrivingRoute(COLLECTOR_START, destination)
+      .then((route) => {
+        if (!mounted) return;
+        setRouteCoords(route.coordinates || []);
+        setServerDistanceKm(typeof route.distanceKm === 'number' ? route.distanceKm : null);
+        setServerEtaMin(typeof route.durationMin === 'number' ? route.durationMin : null);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setRouteCoords([]);
+        setServerDistanceKm(null);
+        setServerEtaMin(null);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [destination]);
 
   const region = useMemo(() => {
     if (!destination) {
@@ -195,7 +233,7 @@ export default function NavigationScreen({ navigation, route }) {
       >
         {destination ? (
           <Polyline
-            coordinates={[COLLECTOR_START, destination]}
+            coordinates={routeCoords.length > 1 ? routeCoords : [COLLECTOR_START, destination]}
             strokeColor={colors.primary}
             strokeWidth={4}
             lineCap="round"

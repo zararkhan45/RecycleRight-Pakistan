@@ -13,7 +13,9 @@ import {
   ListNearbyJobsResponse,
 } from "@workspace/api-zod";
 import {
+  collectorProfilesTable,
   db,
+  pointsLedgerTable,
   pickupAssignmentsTable,
   pickupEventsTable,
   pickupLocationsTable,
@@ -23,6 +25,8 @@ import {
 
 import { mapPickup, mapReceipt } from "../lib/dbMappers";
 import { conflict, forbidden, notFound } from "../lib/httpErrors";
+import { notifyUserByFcm } from "../lib/pushNotifications";
+import { calculatePickupPoints } from "../lib/rewards";
 import { requireAuth, requireRole, type AuthContext } from "../middleware/auth";
 
 const router: IRouter = Router();
@@ -145,6 +149,14 @@ router.post(
       });
 
       const data = AcceptPickupResponse.parse(mapPickup(result, auth.userId));
+
+      void notifyUserByFcm({
+        userId: result.householdUserId,
+        title: "Pickup accepted",
+        body: "A collector has accepted your request and is on the way.",
+        data: { pickupId: String(result.id), event: "pickup_accepted" },
+      });
+
       res.json(data);
     } catch (err) {
       next(err);
@@ -242,8 +254,26 @@ router.post(
         const last = lastWeightEvent.at(-1)?.payload as { finalWeightKg?: number } | null | undefined;
         if (last?.finalWeightKg !== undefined) finalWeightKg = last.finalWeightKg;
 
-        // Very simple points algorithm for MVP.
-        const pointsAwarded = Math.max(0, Math.round(finalWeightKg * 10));
+        const locationRows = await tx
+          .select({ city: pickupLocationsTable.city })
+          .from(pickupLocationsTable)
+          .where(eq(pickupLocationsTable.pickupRequestId, params.id))
+          .limit(1);
+
+        const collectorCityRows = await tx
+          .select({ city: collectorProfilesTable.city })
+          .from(collectorProfilesTable)
+          .where(eq(collectorProfilesTable.userId, assignment.collectorUserId))
+          .limit(1);
+
+        const rewardCity =
+          locationRows[0]?.city ?? collectorCityRows[0]?.city ?? null;
+
+        const { pointsAwarded, pointsPerKg } = await calculatePickupPoints({
+          wasteType: pickup.wasteType,
+          finalWeightKg,
+          city: rewardCity,
+        });
 
         const receiptInserted = await tx
           .insert(receiptsTable)
@@ -255,6 +285,34 @@ router.post(
           .onConflictDoNothing()
           .returning();
         const receipt = receiptInserted[0] ?? null;
+
+        if (receipt) {
+          const existingEarnedRows = await tx
+            .select({ id: pointsLedgerTable.id })
+            .from(pointsLedgerTable)
+            .where(
+              and(
+                eq(pointsLedgerTable.userId, pickup.householdUserId),
+                eq(pointsLedgerTable.type, "earned"),
+                eq(pointsLedgerTable.pickupRequestId, params.id),
+              ),
+            )
+            .limit(1);
+
+          if (!existingEarnedRows[0]) {
+            await tx.insert(pointsLedgerTable).values({
+              userId: pickup.householdUserId,
+              pickupRequestId: params.id,
+              type: "earned",
+              points: pointsAwarded,
+              metadata: {
+                wasteType: pickup.wasteType,
+                finalWeightKg,
+                pointsPerKg,
+              },
+            });
+          }
+        }
 
         const updatedPickup = await tx
           .update(pickupRequestsTable)
@@ -283,6 +341,16 @@ router.post(
         location: null,
         receipt: out.receipt ? mapReceipt(out.receipt) : null,
       });
+
+      if (out.receipt) {
+        void notifyUserByFcm({
+          userId: out.pickup.householdUserId,
+          title: "Pickup completed",
+          body: `You earned ${out.receipt.pointsAwarded} Green Points.`,
+          data: { pickupId: String(out.pickup.id), event: "pickup_completed" },
+        });
+      }
+
       res.json(data);
     } catch (err) {
       next(err);

@@ -115,4 +115,15 @@ Status: PASS
 ```
 
 ## 13) Non-Functional: Security & Privacy
-- **Description**:\n+  - JWT expiry is exactly **24 hours**.\n+  - Privacy requirement: **pickup location is hidden/deleted after completion**.\n+- **Path**: `artifacts/collector/tests/requirements.test.ts` (Test #13)\n+- **Related implementation hook**: `artifacts/collector/lib/domain/logic.ts` (completion sets `pickup.location = null`)\n+\n+```text\n+Status: PASS\n+```\n+\n+## 14) Non-Functional: Performance Smoke\n+- **Description**: Bulk create (500 pickups) completes under a loose time bound to catch accidental performance regressions.\n+- **Path**: `artifacts/collector/tests/requirements.test.ts` (Test #14)\n+\n+```text\n+Status: PASS\n+```\n+
+- **Description**:\n+  - JWT expiry is exactly **24 hours**.\n+  - Privacy requirement: **pickup location is hidden/deleted after completion**.- **Path**: `artifacts/collector/tests/requirements.test.ts` (Test #13)
+- **Related implementation hook**: `artifacts/collector/lib/domain/logic.ts` (completion sets `pickup.location = null`)
+```text
+Status: PASS
+```
+
+##  14) Non-Functional: Performance Smoke
+-**Description**: Bulk create (500 pickups) completes under a loose time bound to catch accidental performance regressions.
+- **Path**: `artifacts/collector/tests/requirements.test.ts` (Test #14)
+```text
+Status: PASS
+```
